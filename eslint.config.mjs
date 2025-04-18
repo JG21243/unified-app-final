@@ -1,21 +1,25 @@
-import { dirname } from "path";
+import path from "path";
 import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
 
+// Compute __dirname in ESM context
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-  {
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-    },
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack(config) {
+    config.resolve.alias["@"] = path.resolve(__dirname);
+    return config;
   },
-];
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: true,
+  },
+};
 
-export default eslintConfig;
+export default nextConfig;

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "moduleResolution": "node",
     "module": "esnext",
     "target": "esnext",
@@ -11,11 +11,39 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "paths": {
-      "@/*": ["*"],
-      "@/components/ui/button": ["components/ui/Button.tsx"],
-      "@/components/ui/use-toast": ["hooks/use-toast.ts"]
-    }
+      "@/*": [
+        "*"
+      ],
+      "@/components/ui/button": [
+        "components/ui/Button.tsx"
+      ],
+      "@/components/ui/use-toast": [
+        "hooks/use-toast.ts"
+      ]
+    },
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["global.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "global.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
