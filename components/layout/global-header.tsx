@@ -108,12 +108,12 @@ export function GlobalHeader() {
             <CommandMenu />
           </div>
 
-          <Button asChild variant="default" size="sm" className="gap-1">
-            <Link href="/prompts/new">
+          <Link href="/prompts/new">
+            <Button variant="default" size="sm" className="gap-1">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline-block">New Prompt</span>
-            </Link>
-          </Button>
+            </Button>
+          </Link>
 
           <ThemeToggle />
         </div>
