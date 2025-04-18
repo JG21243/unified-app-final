@@ -17,14 +17,19 @@ const inter = Inter({
 export const metadata = {
   title: "Legal Prompts Manager",
   description: "Manage and organize your legal prompts",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} antialiased`}>
       <body className="min-h-screen bg-background font-sans">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          enableColorScheme={false}
+        >
           <FavoritesProvider>
             <TagsProvider>
               <div className="relative flex min-h-screen flex-col">
@@ -39,7 +44,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
-
-
-
-import "@/styles/globals.css"
