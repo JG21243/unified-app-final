@@ -11,7 +11,9 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["*"],
+      "@/components/ui/button": ["components/ui/Button.tsx"],
+      "@/components/ui/use-toast": ["hooks/use-toast.ts"]
     }
   },
   "include": ["global.d.ts", "**/*.ts", "**/*.tsx"],
