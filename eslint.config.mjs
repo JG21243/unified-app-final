@@ -1,21 +1,20 @@
-import path from "path";
+import { FlatCompat } from "@eslint/eslintrc";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  webpack(config) {
-    // Alias "@" to the project root directory
-    config.resolve.alias["@"] = path.resolve(process.cwd());
-    return config;
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
-  },
-};
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-export default nextConfig;
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+export default [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      // any other overrides…
+    },
+  },
+];
