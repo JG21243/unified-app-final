@@ -3,7 +3,7 @@ import path from "path";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack(config) {
-    // Alias "@" to the project root
+    // Alias "@" to the project root directory
     config.resolve.alias["@"] = path.resolve(process.cwd());
     return config;
   },
