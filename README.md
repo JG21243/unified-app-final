@@ -8,7 +8,7 @@
 
 A modern, feature-rich AI assistant application built on the [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses) with Next.js 15 and TypeScript. This responsive web application provides an intuitive chat interface with powerful AI capabilities.
 
-![AI Assistant Screenshot](your-screenshot-url-here)
+
 
 ## ✨ Features
 
