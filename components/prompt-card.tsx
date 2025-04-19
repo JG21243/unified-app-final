@@ -3,24 +3,31 @@ import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import type { LegalPrompt } from "@/app/actions"
 
-interface PromptCardProps {
-  prompt: {
-    id: number
-    name: string
-    prompt: string
-    category?: string
-    systemMessage?: string | null
-    createdAt: string
-  }
+export interface PromptCardProps {
+  prompt: LegalPrompt
   selectable?: boolean
   selected?: boolean
-  onSelect?: (selected: boolean) => void
+  onSelect?: (checked: boolean) => void // Update this line
+  onFavorite?: (id: number, isFavorite: boolean) => void
+  onDuplicate?: (id: number) => Promise<void>
+  onDelete?: (id: number) => void
 }
 
-export function PromptCard({ prompt, selectable = false, selected = false, onSelect }: PromptCardProps) {
-  const handleCheckboxChange = (checked: boolean) => {
-    if (onSelect) {
+export function PromptCard({
+  prompt,
+  selectable = false,
+  selected = false,
+  onSelect,
+  onFavorite, // Add unused props to destructuring for completeness
+  onDuplicate, // Add unused props to destructuring for completeness
+  onDelete, // Add unused props to destructuring for completeness
+}: PromptCardProps) {
+  const handleCheckboxChange = (checked: boolean | "indeterminate") => {
+    // The Checkbox onCheckedChange provides boolean | "indeterminate"
+    // We only care about the boolean state for selection
+    if (typeof checked === "boolean" && onSelect) {
       onSelect(checked)
     }
   }

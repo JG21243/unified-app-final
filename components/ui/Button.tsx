@@ -7,14 +7,21 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-blue-600 text-white hover:bg-blue-700",
-        outline: "border border-input bg-transparent hover:bg-accent",
-        ghost: "bg-transparent hover:bg-accent",
+        default:
+          "bg-primary text-primary-foreground hover:bg-primary/90", // Use primary color token, text-primary-foreground, and Tailwind's opacity modifier for hover
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground", // Use input border, background, accent tokens
+        ghost: "hover:bg-accent hover:text-accent-foreground", // Use accent tokens
+        // Add other variants like secondary, destructive, link as needed, using tokens
+        // secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        // destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        // link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 py-2 px-4",
-        sm: "h-8 px-3",
-        icon: "h-10 w-10 p-2",
+        default: "h-2xl px-md py-sm", // Use spacing tokens: h-10 -> h-2xl, px-4 -> px-md, py-2 -> py-sm
+        sm: "h-xl px-base", // Use spacing tokens: h-8 -> h-xl, px-3 -> px-base
+        // lg: "h-11 rounded-md px-8", // Example for a larger size using tokens
+        icon: "h-2xl w-2xl p-sm", // Use spacing tokens: h-10 -> h-2xl, w-10 -> w-2xl, p-2 -> p-sm
       },
     },
     defaultVariants: {

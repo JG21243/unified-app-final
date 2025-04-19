@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { useState, useTransition, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { LegalPrompt } from "@/app/actions"
-import { getLegalPrompts, duplicateLegalPrompt, deleteLegalPrompt } from "@/app/actions"
+import { getLegalPrompts, duplicateLegalPrompt, deleteLegalPrompt } from "@/app/actions";
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AdvancedSearch, type SearchFilters } from "./advanced-search"
@@ -52,6 +52,28 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 // Import the useFavorites hook
 import { useFavorites } from "@/components/favorites-provider"
 
+// === Utilities =============================================================
+
+/**
+ * Map our SortOption enum into the API sortBy string.
+ */
+const getApiSortBy = (option: SortOption): string => {
+  switch (option) {
+    case "createdAt-asc":
+      return '"createdAt" ASC'
+    case "name-asc":
+      return "name ASC"
+    case "name-desc":
+      return "name DESC"
+    case "category-asc":
+      return "category ASC"
+    case "favorites":
+      return '"createdAt" DESC'
+    default:
+      return '"createdAt" DESC'
+  }
+}
+
 interface LegalPromptsListProps {
   initialPrompts: LegalPrompt[]
   initialCategories: string[]
@@ -62,9 +84,31 @@ interface LegalPromptsListProps {
   }
 }
 
-type SortOption = "createdAt-desc" | "createdAt-asc" | "name-asc" | "name-desc" | "category-asc" | "favorites"
+type SortOption = "createdAt-desc" | "createdAt-asc" | "name-asc" | "name-desc" | "category-asc" | "favorites";
 type ViewMode = "grid" | "list"
 
+// === Component ==============================================================
+
+/**
+ * LegalPromptsList
+ *
+ * Renders a paginated and searchable list of legal prompts with support for:
+ * - Server‑side fetching and filtering based on search term, categories, date range, and sort order.
+ * - Client‑side filtering to show only favorite prompts.
+ * - Bulk actions (select, clear).
+ * - Toggle between grid and list views.
+ * - Favorite, duplicate, and delete operations with appropriate UI feedback (toasts and confirmation dialogs).
+ * - URL synchronization: updates query parameters on search and pagination without full page reload.
+ * - Keyboard shortcuts: 
+ *   - g: switch to grid view
+ *   - l: switch to list view
+ *   - f: toggle favorites filter
+ *   - ?: show shortcuts help
+ *   - ←: previous page
+ *   - →: next page
+ *
+ * @param initialPrompts - The initial array of prompts to display on mount.
+ * @param initialCategories - The initial set of categories available for filtering.
 export function LegalPromptsList({
   initialPrompts,
   initialCategories,
@@ -102,26 +146,7 @@ export function LegalPromptsList({
     startTransition(async () => {
       try {
         // Map the sort option to the format expected by the API
-        let sortBy: string
-        switch (filters.sortBy) {
-          case "createdAt-asc":
-            sortBy = '"createdAt" ASC'
-            break
-          case "name-asc":
-            sortBy = "name ASC"
-            break
-          case "name-desc":
-            sortBy = "name DESC"
-            break
-          case "category-asc":
-            sortBy = "category ASC"
-            break
-          case "favorites":
-            sortBy = '"createdAt" DESC' // Default sort for favorites
-            break
-          default:
-            sortBy = '"createdAt" DESC'
-        }
+        const sortBy = getApiSortBy(filters.sortBy as SortOption)
 
         // Fetch data from the server
         const result = await getLegalPrompts({
@@ -170,7 +195,11 @@ export function LegalPromptsList({
         const newUrl = `/?${params.toString()}`
         router.push(newUrl, { scroll: false })
       } catch (err) {
-        console.error("Error fetching prompts:", err)
+        console.error("Error fetching prompts:", {
+          message: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : "No stack trace available",
+          originalError: err,
+        })
         setError("Failed to fetch prompts. Please try again.")
       } finally {
         setIsLoading(false)
@@ -188,26 +217,7 @@ export function LegalPromptsList({
     startTransition(async () => {
       try {
         // Map the sort option to the format expected by the API
-        let sortBy: string
-        switch (sortOption) {
-          case "createdAt-asc":
-            sortBy = '"createdAt" ASC'
-            break
-          case "name-asc":
-            sortBy = "name ASC"
-            break
-          case "name-desc":
-            sortBy = "name DESC"
-            break
-          case "category-asc":
-            sortBy = "category ASC"
-            break
-          case "favorites":
-            sortBy = '"createdAt" DESC' // Default sort for favorites
-            break
-          default:
-            sortBy = '"createdAt" DESC'
-        }
+        const sortBy = getApiSortBy(sortOption)
 
         // Get current search params
         const term = searchParams.get("search") || ""
@@ -358,6 +368,13 @@ export function LegalPromptsList({
     }
   }
 
+  // Handle AlertDialog open change
+  const handleAlertDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setPromptToDelete(null)
+    }
+  }
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -397,7 +414,11 @@ export function LegalPromptsList({
     }
 
     window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("keydown", handleKeyDown)
+      }
+    }
   }, [currentPage, totalPages, showFavoritesOnly])
 
   // Calculate pagination
@@ -416,7 +437,7 @@ export function LegalPromptsList({
       <div className="text-center p-8 bg-muted/30 rounded-lg">
         <h3 className="text-lg font-medium mb-2">No prompts found</h3>
         <p className="text-muted-foreground mb-4">Create your first prompt to get started.</p>
-        <Button onClick={() => router.push("/?tab=create")}>
+        <Button onClick={() => window.location.href = "/?tab=create"}>
           Create a Prompt
         </Button>
       </div>
@@ -428,7 +449,7 @@ export function LegalPromptsList({
       <Section contentClassName="space-y-6">
         <AdvancedSearch categories={categories} onSearch={handleSearch} initialFilters={initialFilters} />
 
-        <BulkActions selectedPrompts={selectedPrompts} categories={categories} onClearSelection={clearSelection} />
+        <BulkActions selectedPrompts={selectedPrompts.map(id => id.toString())} onComplete={clearSelection} />
 
         {isLoading ? (
           <PromptListSkeleton viewMode={viewMode} />
@@ -586,11 +607,11 @@ export function LegalPromptsList({
                     >
                       <PromptCard
                         prompt={prompt}
-                        isSelected={selectedPrompts.includes(prompt.id)}
-                        onSelect={togglePromptSelection}
+                        selected={selectedPrompts.includes(prompt.id)}
+                        onSelect={() => togglePromptSelection(prompt.id)}
                         onFavorite={handleFavoriteToggle}
                         onDuplicate={handleDuplicate}
-                        onDelete={(id) => setPromptToDelete(id)}
+                        onDelete={(id: number) => setPromptToDelete(id)}
                       />
                     </motion.div>
                   ))}
@@ -685,7 +706,7 @@ export function LegalPromptsList({
       </Section>
 
       {/* Delete confirmation dialog */}
-      <AlertDialog open={promptToDelete !== null} onOpenChange={(open) => !open && setPromptToDelete(null)}>
+      <AlertDialog open={promptToDelete !== null} onOpenChange={handleAlertDialogOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -703,6 +724,8 @@ export function LegalPromptsList({
       </AlertDialog>
 
       {/* Keyboard shortcuts dialog */}
+      {/* This dialog provides a list of keyboard shortcuts to help users navigate and manage prompts more efficiently.
+          It is triggered when the user presses the "?" key or clicks the keyboard icon in the UI. */}
       <Dialog open={showKeyboardShortcuts} onOpenChange={setShowKeyboardShortcuts}>
         <DialogContent>
           <DialogHeader>
@@ -712,6 +735,7 @@ export function LegalPromptsList({
             </DialogDescription>
           </DialogHeader>
 
+          {/* Display a grid of keyboard shortcuts with their corresponding actions */}
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="flex items-center">
               <kbd className="px-2 py-1 bg-muted rounded text-xs font-semibold mr-2">g</kbd>

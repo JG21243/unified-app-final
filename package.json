@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate:ui-inventory": "ts-node --transpile-only scripts/generate-ui-inventory.ts"
+    "generate:ui-inventory": "node scripts/generate-ui-inventory.js"
   },
   "dependencies": {
     "@aws-sdk/client-rds-data": "latest",
@@ -77,6 +77,7 @@
     "knex": "latest",
     "kysely": "latest",
     "lucide-react": "^0.454.0",
+    "modern-normalize": "^3.0.1",
     "mysql2": "latest",
     "next": "^15.2.3",
     "next-themes": "latest",
