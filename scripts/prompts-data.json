@@ -1,0 +1,127 @@
+[
+    {
+      "title": "Legal Citation Extraction Assistant",
+      "prompt": "# Legal Citation Extraction Prompt",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Legal Case Summary",
+      "prompt": "# Legal Case Summary Prompt for Comprehensive Analysis",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Code Explainer (simple)",
+      "prompt": "# Code Simplification Prompt: Breaking Down Complex Code into Simple Explanations",
+      "category": "Code"
+    },
+    {
+      "title": "Grading Rubric",
+      "prompt": "# Customizable Grading Rubric for Legal Document Evaluation",
+      "category": "Evaluation"
+    },
+    {
+      "title": "Prompt Engineer Assistant",
+      "prompt": "# Prompt Engineering for LLMs: Python Code Refactoring",
+      "category": "Prompting"
+    },
+    {
+      "title": "Professional Writer",
+      "prompt": "# Prompt for Professional Writer: Crafting Articulate Legal Scholarship",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Indigo Book Citation",
+      "prompt": "# Legal Citation Checker Prompt for Indigo Book Compliance",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Bluebook Legal Citation",
+      "prompt": "# Legal Case Summary Prompt for Law Students",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Tos Summarizer",
+      "prompt": "# Terms of Service Review and Enforceability Analysis Prompt",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Legal Feedback and Suggestions",
+      "prompt": "# Legal Memo Review and Improvement Suggestions",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Creative Writing",
+      "prompt": "# Prompt Database: Creative Writing Prompts",
+      "category": "Prompting"
+    },
+    {
+      "title": "Writing Editor",
+      "prompt": "# Law Review Outline Prompt: Structuring Arguments on Antisemitism in the Courts",
+      "category": "Writing"
+    },
+    {
+      "title": "Bluebook checker",
+      "prompt": "# Bluebook Citation Checker: Analyze and Correct Citations According to Bluebook Rules",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "JSON Extractor",
+      "prompt": "# Prompt: Convert Unstructured Text to JSON Format",
+      "category": "Code"
+    },
+    {
+      "title": "Transcript Summarizer",
+      "prompt": "# Legal Transcript Summarization Prompt",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Legal fact checker",
+      "prompt": "# Legal Information Fact-Checking Prompt",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Contract analysis for Consumers",
+      "prompt": "# Legal Analysis Prompt for Consumer Contracts",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Legal Memo Generator NY",
+      "prompt": "# Legal Memo Generator Prompt: Risks of Disclaimers in Fraudulent Inducement Claims in New York",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Codebase Summarizer",
+      "prompt": "# Comprehensive Codebase Analysis Prompt",
+      "category": "Code"
+    },
+    {
+      "title": "Typescript Programmer",
+      "prompt": "# TypeScript Programming Prompts for Vercel Next.js Applications",
+      "category": "Code"
+    },
+    {
+      "title": "Query rewriter for RAQ",
+      "prompt": "# Query Rewriter for Retrieval-Augmented Generation (RAG)",
+      "category": "Prompting"
+    },
+    {
+      "title": "Typescript Programming Assistant",
+      "prompt": "# TypeScript Programming Assistant Prompt for Vercel Next.js Projects",
+      "category": "Code"
+    },
+    {
+      "title": "Complete Code Updater",
+      "prompt": "# Prompt for Complete Code Updates",
+      "category": "Code"
+    },
+    {
+      "title": "Federal Bankruptcy Citation Guidance",
+      "prompt": "# Prompt for Legal Citation Guidance on Federal Bankruptcy Filings",
+      "category": "Legal Prompt"
+    },
+    {
+      "title": "Chapter 11 Bad Faith Analysis",
+      "prompt": "# Prompt for Chapter 11 Bankruptcy Bad Faith Analysis",
+      "category": "Legal Prompt"
+    }
+  ]
