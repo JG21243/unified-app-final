@@ -109,6 +109,13 @@ type ViewMode = "grid" | "list"
  *
  * @param initialPrompts - The initial array of prompts to display on mount.
  * @param initialCategories - The initial set of categories available for filtering.
+ * @param initialTotal - The total count of prompts matching the initial criteria.
+ * @param initialFilters - The initial search filter values (term, categories, date range, includeSystemMessages, sortBy).
+ *
+ * @returns A React component that manages and displays a list of legal prompts.
+ *
+ * @public
+ */
 export function LegalPromptsList({
   initialPrompts,
   initialCategories,
