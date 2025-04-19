@@ -15,6 +15,18 @@ export interface PromptCardProps {
   onDelete?: (id: number) => void
 }
 
+/**
+ * Renders a card for a prompt with optional selection checkbox and metadata.
+ *
+ * @param prompt - The prompt data to display, including id, name, category, text, and creation date.
+ * @param selectable - If true, shows a checkbox to allow selecting the card. Defaults to false.
+ * @param selected - If true, applies selected styling and checks the selection checkbox. Defaults to false.
+ * @param onSelect - Callback invoked when the selection checkbox changes; receives the new selected state.
+ * @param onFavorite - Callback for handling "favorite" action (unused by this component).
+ * @param onDuplicate - Callback for handling "duplicate" action (unused by this component).
+ * @param onDelete - Callback for handling "delete" action (unused by this component).
+ * @returns A JSX element representing the prompt card.
+ */
 export function PromptCard({
   prompt,
   selectable = false,
