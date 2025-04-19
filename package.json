@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate:ui-inventory": "ts-node --transpile-only scripts/generate-ui-inventory.ts"
   },
   "dependencies": {
     "@aws-sdk/client-rds-data": "latest",
@@ -104,15 +105,18 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.16.10",
+    "@types/node": "^20.17.30",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^19.1.2",
     "@types/react-syntax-highlighter": "^15.5.13",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.13.0",
     "eslint-config-next": "^15.0.1",
+    "glob": "^11.0.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
+    "ts-morph": "^25.0.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
   }
 }

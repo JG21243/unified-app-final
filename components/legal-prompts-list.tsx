@@ -416,8 +416,8 @@ export function LegalPromptsList({
       <div className="text-center p-8 bg-muted/30 rounded-lg">
         <h3 className="text-lg font-medium mb-2">No prompts found</h3>
         <p className="text-muted-foreground mb-4">Create your first prompt to get started.</p>
-        <Button asChild>
-          <a href="/?tab=create">Create a Prompt</a>
+        <Button onClick={() => router.push("/?tab=create")}>
+          Create a Prompt
         </Button>
       </div>
     )
