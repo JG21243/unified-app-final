@@ -3,7 +3,7 @@ import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core"
 // Define the table with the correct name "legalprompt"
 export const prompts = pgTable("legalprompt", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
   prompt: text("prompt").notNull(),
   category: varchar("category", { length: 100 }),
   systemMessage: text("systemMessage"),
