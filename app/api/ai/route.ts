@@ -3,6 +3,24 @@ import OpenAI from "openai"
 
 export const runtime = "nodejs"
 
+/**
+ * Handles POST requests to the /api/ai endpoint.
+ *
+ * This function:
+ *   1. Verifies that the OPENAI_API_KEY environment variable is set.
+ *   2. Parses and validates the request body for `prompt` and optional `systemMessage`.
+ *   3. Constructs the chat messages array for the OpenAI API.
+ *   4. Invokes the OpenAI Chat Completion API with the specified model.
+ *   5. Returns the AI-generated response or an error message in JSON format.
+ *
+ * @param req - The NextRequest containing a JSON payload with:
+ *                 - `prompt`: The user input to send to the AI model (required).
+ *                 - `systemMessage`: An optional system-level instruction for the AI.
+ * @returns A Promise that resolves to a Response with:
+ *            - On success: status 200 and JSON `{ response: string }`.
+ *            - On client error: status 400 and JSON `{ message: string }`.
+ *            - On server error: status 500 and JSON `{ message: string }`.
+ */
 export async function POST(req: NextRequest) {
   try {
     // Check if OpenAI API key is configured
@@ -28,7 +46,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create the messages array
-    const messages = []
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = []
 
     if (systemMessage) {
       messages.push({
@@ -49,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     // Use a non-streaming approach for simplicity
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o",
       messages,
       stream: false, // Set to false to get a regular response
     })
@@ -66,9 +84,10 @@ export async function POST(req: NextRequest) {
     )
   } catch (error) {
     console.error("Error in AI API route:", error)
+    const errorMessage = error instanceof Error ? error.message : "An unexpected server error occurred"
     return new Response(
       JSON.stringify({
-        message: error.message || "An unexpected server error occurred",
+        message: errorMessage,
       }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     )
