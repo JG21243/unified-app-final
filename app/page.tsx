@@ -65,7 +65,7 @@ async function PromptList() {
         {prompts.map((prompt) => (
           <div key={prompt.id} className="bg-card rounded-lg border p-4 hover:shadow-md transition-shadow">
             <h3 className="font-medium mb-2">{prompt.name}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{prompt.prompt}</p>
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{prompt.prompt.startsWith('# ') ? prompt.prompt.substring(2) : prompt.prompt}</p>
             <div className="flex justify-between items-center">
               <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">{prompt.category}</span>
               <Link href={`/prompts/${prompt.id}`} passHref>
