@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, Inbox } from "lucide-react"
 
 import { getPrompts } from "@/app/actions"
 import { PromptCardSkeleton } from "@/components/prompt-card-skeleton"
@@ -46,6 +46,7 @@ async function PromptList() {
     if (!prompts || prompts.length === 0) {
       return (
         <div className="mt-4 sm:mt-8 flex flex-col items-center justify-center rounded-xl border border-dashed p-6 sm:p-12 text-center bg-muted/20">
+          <Inbox className="h-12 w-12 text-muted-foreground mb-4" />
           <h2 className="text-xl sm:text-2xl font-semibold">No prompts found</h2>
           <p className="mt-3 text-muted-foreground max-w-md px-4 text-sm sm:text-base">
             Get started by creating a new prompt for your legal AI workflows.
@@ -67,7 +68,7 @@ async function PromptList() {
             <h3 className="font-medium mb-2">{prompt.name}</h3>
             <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{prompt.prompt.startsWith('# ') ? prompt.prompt.substring(2) : prompt.prompt}</p>
             <div className="flex justify-between items-center">
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">{prompt.category}</span>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{prompt.category}</span>
               <Link href={`/prompts/${prompt.id}`} passHref>
                 <Button variant="outline" size="sm">
                   View
