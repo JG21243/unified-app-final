@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { Plus, Inbox } from "lucide-react"
+import { Plus, Inbox, AlertTriangle } from "lucide-react"
 
 import { getPrompts } from "@/app/actions"
 import { PromptCardSkeleton } from "@/components/prompt-card-skeleton"
@@ -25,7 +25,10 @@ async function PromptList() {
     if (error) {
       return (
         <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          <h2 className="text-xl font-semibold mb-2">Error</h2>
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="h-5 w-5 text-red-700 flex-shrink-0" />
+            <h2 className="text-xl font-semibold">Error</h2>
+          </div>
           <p>{error}</p>
           <p className="mt-4 text-sm">You may need to create the database table. Please run the following SQL:</p>
           <pre className="mt-2 p-2 sm:p-4 bg-gray-800 text-gray-100 rounded-md overflow-x-auto text-xs sm:text-sm">
@@ -83,7 +86,10 @@ async function PromptList() {
     console.error("Error in PromptList:", error)
     return (
       <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-red-50 border border-red-200 rounded-lg text-red-700">
-        <h2 className="text-xl font-semibold mb-2">Error</h2>
+        <div className="flex items-center gap-2 mb-2">
+          <AlertTriangle className="h-5 w-5 text-red-700 flex-shrink-0" />
+          <h2 className="text-xl font-semibold">Error</h2>
+        </div>
         <p>An unexpected error occurred while loading prompts.</p>
         <p className="mt-2 text-sm font-mono">{error instanceof Error ? error.message : String(error)}</p>
       </div>

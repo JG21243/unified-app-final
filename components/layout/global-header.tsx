@@ -102,7 +102,7 @@ export function GlobalHeader() {
                 key={route.path}
                 href={route.path}
                 className={cn(
-                  "flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary",
+                  "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
                   isActive(route.path) ? "text-primary" : "text-muted-foreground",
                 )}
               >
@@ -119,7 +119,7 @@ export function GlobalHeader() {
           </div>
 
           <Link href="/prompts/new">
-            <Button variant="default" size="sm" className="gap-1">
+            <Button variant="default" size="sm" className="gap-2">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline-block">New Prompt</span>
             </Button>
