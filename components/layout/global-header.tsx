@@ -32,12 +32,22 @@ export function GlobalHeader() {
     },
   ]
 
-  const isActive = (path: string) => {
-    if (path === "/") {
-      return pathname === "/" || pathname.startsWith("/?") || pathname.startsWith("/prompts")
+  const isActive = (currentPath: string) => {
+    // Exact match for paths with query parameters like /?tab=dashboard
+    if (currentPath.includes("?")) {
+      return pathname === currentPath;
     }
-    return pathname.startsWith(path)
-  }
+
+    // Special handling for the root "Prompts" path (path: "/")
+    if (currentPath === "/") {
+      // Active if it's the exact root path or any /prompts/... sub-path,
+      // AND the pathname does not contain any query parameters (to avoid conflict with /?tab=dashboard)
+      return (pathname === "/" || pathname.startsWith("/prompts/")) && !pathname.includes("?");
+    }
+
+    // Default for other paths (e.g., /categories)
+    return pathname.startsWith(currentPath);
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
