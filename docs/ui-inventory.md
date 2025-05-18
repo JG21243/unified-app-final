@@ -91,130 +91,81 @@ While the table below provides a quick overview of components, it's crucial to m
 
 ---
 
+**Example: Dialog Component (`components/ui/dialog.tsx`)**
+
+*   **Description:** A modal window that appears on top of the main content, requiring user interaction before they can return to the underlying page. Used for focused tasks, alerts, or presenting critical information.
+*   **When to Use:**
+    *   Confirming critical actions (e.g., "Are you sure you want to delete?").
+    *   Displaying forms for creating or editing items where a focused, separate UI is beneficial.
+    *   Showing additional details or information without navigating away from the current page.
+    *   Alerting users to important system messages or errors that require acknowledgment.
+*   **Key Sub-Components:**
+    *   `Dialog`: The root component that manages the dialog\'s state.
+    *   `DialogTrigger`: A component (often a Button) that, when clicked, opens the dialog.
+    *   `DialogPortal`: Internally used to port the dialog to a different part of the DOM (usually `document.body`).
+    *   `DialogOverlay`: The semi-transparent background that covers the main content when the dialog is open.
+    *   `DialogContent`: The main container for the dialog\'s content. This is what the user sees as the "modal window."
+    *   `DialogHeader`: Optional. Container for the dialog\'s header, often includes `DialogTitle` and `DialogDescription`.
+    *   `DialogTitle`: Optional. For displaying the main title within the `DialogHeader`.
+    *   `DialogDescription`: Optional. For displaying additional descriptive text or context within the `DialogHeader`.
+    *   `DialogFooter`: Optional. Container for action buttons (e.g., "Save", "Cancel", "Confirm") at the bottom of the dialog.
+    *   `DialogClose`: A component (often a Button or an icon) that, when clicked, closes the dialog.
+*   **Props (General):**
+    *   `open` (on `Dialog`): (Optional) Boolean to control the dialog\'s visibility programmatically.
+    *   `onOpenChange` (on `Dialog`): (Optional) Callback function when the dialog\'s open state changes.
+    *   `className` (on various sub-components): (Optional) Additional CSS classes for custom styling.
+*   **Do\'s:**
+    *   Always provide a clear way to close the dialog (e.g., a close button with an "X" icon, a "Cancel" button in the footer). The `DialogContent` includes a default "X" close button.
+    *   Use a `DialogTitle` to clearly indicate the purpose of the dialog.
+    *   Keep dialog content concise and focused on a single task or piece of information.
+    *   Ensure dialogs are accessible (e.g., keyboard focus is managed correctly, ARIA attributes are used – Radix UI handles much of this automatically).
+*   **Don'ts:**
+    *   Don't create dialogs that are too large or take up too much screen space. They should be focused and to the point.
+    *   Avoid putting too many steps or complex workflows within a single dialog.
+
+---
+
+**Example: Select Component (`components/ui/select.tsx`)**
+
+*   **Description:** A control that allows users to choose one option from a predefined list. It displays the current selection and a dropdown list of other options.
+*   **When to Use:**
+    *   When users need to pick a single option from a list of 5 or more items.
+    *   For settings, filters, or form inputs where the available options are finite and known.
+    *   When space is limited and a full list (e.g., radio buttons) would be too cluttered.
+*   **Key Sub-Components:**
+    *   `Select`: The root component that manages the select\'s state.
+    *   `SelectGroup`: Optional. Used to group related `SelectItem` components with a `SelectLabel`.
+    *   `SelectValue`: Displays the currently selected value in the `SelectTrigger`. Can have a `placeholder` prop.
+    *   `SelectTrigger`: The clickable element that opens/closes the dropdown list of options.
+    *   `SelectContent`: The container for the list of options that appears when the select is open.
+    *   `SelectLabel`: Optional. A label for a `SelectGroup` of items.
+    *   `SelectItem`: Represents an individual option in the dropdown list. Requires a `value` prop.
+    *   `SelectSeparator`: Optional. A visual separator between groups of items or individual items.
+    *   `SelectScrollUpButton`, `SelectScrollDownButton`: Optional. Buttons for scrolling within the `SelectContent` if there are many items.
+*   **Props (General):**
+    *   `value` (on `Select`): (Optional) The controlled value of the selected item.
+    *   `onValueChange` (on `Select`): (Optional) Callback function when the selected value changes.
+    *   `defaultValue` (on `Select`): (Optional) The initial value for uncontrolled state.
+    *   `disabled` (on `SelectTrigger` or `SelectItem`): Boolean. Disables the select or a specific item.
+    *   `placeholder` (on `SelectValue`): Text to display when no value is selected.
+    *   `className` (on various sub-components): (Optional) Additional CSS classes for custom styling.
+    *   `position` (on `SelectContent`): (Optional, default: `popper`) Controls how the content is positioned relative to the trigger.
+*   **Do\'s:**
+    *   Always provide a `SelectLabel` (either visually or for screen readers via `aria-label` on `SelectTrigger`) to describe the purpose of the select input.
+    *   Ensure `SelectItem` components have meaningful text content and a unique `value` prop.
+    *   Use `SelectGroup` and `SelectSeparator` to organize long lists of options for better scannability.
+    *   Consider setting a default selected option if it makes sense for the context.
+*   **Don\'ts:**
+    *   Don\'t use a select for fewer than 3-4 options; radio buttons or toggle buttons might be more appropriate.
+    *   Avoid overly long text in `SelectItem` components; keep them concise.
+    *   Don\'t use a select if users need to input custom text (use an `<input>` with datalist or a combobox pattern instead).
+
+---
+
 | Component | Path | Props | Variants |
-|-----------|------|-------|----------|
-| websearch-config | components/websearch-config.tsx |  |  |
-| version-history | components/version-history.tsx |  |  |
-| tools-panel | components/tools-panel.tsx |  |  |
-| tool-call | components/tool-call.tsx |  |  |
-| theme-provider | components/theme-provider.tsx |  |  |
-| tags-provider | components/tags-provider.tsx |  |  |
-| tags-manager | components/tags-manager.tsx |  |  |
-| tags-input | components/tags-input.tsx |  |  |
-| tag-management | components/tag-management.tsx |  |  |
-| search-filter | components/search-filter.tsx |  |  |
-| prompt-version-history | components/prompt-version-history.tsx |  |  |
-| prompt-testing-interface | components/prompt-testing-interface.tsx |  |  |
-| prompt-tester | components/prompt-tester.tsx |  |  |
-| prompt-tester-streaming | components/prompt-tester-streaming.tsx |  |  |
-| prompt-test-interface | components/prompt-test-interface.tsx |  |  |
-| prompt-selector | components/prompt-selector.tsx |  |  |
-| prompt-preview | components/prompt-preview.tsx |  |  |
-| prompt-list-skeleton | components/prompt-list-skeleton.tsx |  |  |
-| prompt-list-item | components/prompt-list-item.tsx |  |  |
-| prompt-filters | components/prompt-filters.tsx |  |  |
-| prompt-detail | components/prompt-detail.tsx |  |  |
-| prompt-card | components/prompt-card.tsx |  |  |
-| prompt-card-skeleton | components/prompt-card-skeleton.tsx |  |  |
-| prompt-analytics | components/prompt-analytics.tsx |  |  |
-| prompt-actions | components/prompt-actions.tsx |  |  |
-| panel-config | components/panel-config.tsx |  |  |
-| onboarding-tour | components/onboarding-tour.tsx |  |  |
-| message | components/message.tsx |  |  |
-| legal-prompts-list | components/legal-prompts-list.tsx |  |  |
-| keyboard-shortcuts | components/keyboard-shortcuts.tsx |  |  |
-| import-prompts | components/import-prompts.tsx |  |  |
-| functions-view | components/functions-view.tsx |  |  |
-| file-upload | components/file-upload.tsx |  |  |
-| file-search-setup | components/file-search-setup.tsx |  |  |
-| favorites-provider | components/favorites-provider.tsx |  |  |
-| export-prompts | components/export-prompts.tsx |  |  |
-| error-boundary | components/error-boundary.tsx |  |  |
-| enhanced-dashboard | components/enhanced-dashboard.tsx |  |  |
-| edit-prompt-form | components/edit-prompt-form.tsx |  |  |
-| delete-prompt-button | components/delete-prompt-button.tsx |  |  |
-| date-range-picker | components/date-range-picker.tsx |  |  |
-| dashboard | components/dashboard.tsx |  |  |
-| dashboard-stats | components/dashboard-stats.tsx |  |  |
-| create-prompt-form | components/create-prompt-form.tsx |  |  |
-| country-selector | components/country-selector.tsx |  |  |
-| command-menu | components/command-menu.tsx |  |  |
-| collaborative-workspace | components/collaborative-workspace.tsx |  |  |
-| chat | components/chat.tsx |  |  |
-| category-select | components/category-select.tsx |  |  |
-| category-manager | components/category-manager.tsx |  |  |
-| bulk-actions | components/bulk-actions.tsx |  |  |
-| assistant | components/assistant.tsx |  |  |
-| annotations | components/annotations.tsx |  |  |
-| ai-prompt-assistant | components/ai-prompt-assistant.tsx |  |  |
-| advanced-search | components/advanced-search.tsx |  |  |
-| typography | components/ui/typography.tsx |  |  |
-| tooltip | components/ui/tooltip.tsx |  |  |
-| toggle | components/ui/toggle.tsx |  |  |
-| toggle-group | components/ui/toggle-group.tsx |  |  |
-| toaster | components/ui/toaster.tsx |  |  |
-| toast | components/ui/toast.tsx |  |  |
-| textarea | components/ui/textarea.tsx |  |  |
-| tabs | components/ui/tabs.tsx |  |  |
-| table | components/ui/table.tsx |  |  |
-| switch | components/ui/switch.tsx |  |  |
-| sonner | components/ui/sonner.tsx |  |  |
-| slider | components/ui/slider.tsx |  |  |
-| skeleton | components/ui/skeleton.tsx |  |  |
-| sidebar | components/ui/sidebar.tsx |  |  |
-| sheet | components/ui/sheet.tsx |  |  |
-| separator | components/ui/separator.tsx |  |  |
-| select | components/ui/select.tsx |  |  |
-| scroll-area | components/ui/scroll-area.tsx |  |  |
-| resizable | components/ui/resizable.tsx |  |  |
-| radio-group | components/ui/radio-group.tsx |  |  |
-| progress | components/ui/progress.tsx |  |  |
-| popover | components/ui/popover.tsx |  |  |
-| pagination | components/ui/pagination.tsx |  |  |
-| navigation-menu | components/ui/navigation-menu.tsx |  |  |
-| motion | components/ui/motion.tsx |  |  |
-| menubar | components/ui/menubar.tsx |  |  |
-| label | components/ui/label.tsx |  |  |
-| input | components/ui/input.tsx |  |  |
-| input-otp | components/ui/input-otp.tsx |  |  |
-| hover-card | components/ui/hover-card.tsx |  |  |
-| form | components/ui/form.tsx |  |  |
-| dropdown-menu | components/ui/dropdown-menu.tsx |  |  |
-| drawer | components/ui/drawer.tsx |  |  |
-| dialog | components/ui/dialog.tsx |  |  |
-| context-menu | components/ui/context-menu.tsx |  |  |
-| command | components/ui/command.tsx |  |  |
-| combobox | components/ui/combobox.tsx |  |  |
-| collapsible | components/ui/collapsible.tsx |  |  |
-| checkbox | components/ui/checkbox.tsx |  |  |
-| chart | components/ui/chart.tsx |  |  |
-| carousel | components/ui/carousel.tsx |  |  |
-| card | components/ui/card.tsx |  |  |
-| calendar | components/ui/calendar.tsx |  |  |
-| breadcrumb | components/ui/breadcrumb.tsx |  |  |
-| badge | components/ui/badge.tsx |  |  |
-| avatar | components/ui/avatar.tsx |  |  |
-| aspect-ratio | components/ui/aspect-ratio.tsx |  |  |
-| alert | components/ui/alert.tsx |  |  |
-| alert-dialog | components/ui/alert-dialog.tsx |  |  |
-| accordion | components/ui/accordion.tsx |  |  |
-| Button | components/ui/Button.tsx |  |  |
-| theme-toggle | components/theme/theme-toggle.tsx |  |  |
-| section | components/layout/section.tsx |  |  |
-| page-header | components/layout/page-header.tsx |  |  |
-| page-container | components/layout/page-container.tsx |  |  |
-| global-header | components/layout/global-header.tsx |  |  |
-| global-footer | components/layout/global-footer.tsx |  |  |
-| app-header | components/layout/app-header.tsx |  |  |
-| Header | components/layout/Header.tsx |  |  |
-| page | app/page.tsx |  |  |
-| not-found | app/not-found.tsx |  |  |
-| layout | app/layout.tsx |  |  |
-| page | app/prompts/page.tsx |  |  |
-| layout | app/prompts/layout.tsx |  |  |
-| page | app/prompts/new/page.tsx |  |  |
-| page | app/prompts/[id]/page.tsx |  |  |
-| error | app/prompts/[id]/error.tsx |  |  |
-| page | app/prompts/[id]/edit/page.tsx |  |  |
-| page | app/chat/page.tsx |  |  |
-| page | app/categories/page.tsx |  |  |
+| --- | --- | --- | --- |
+| Button | components/ui/Button.tsx | `variant`, `size`, `asChild`, `...rest` | `default`, `destructive`, `outline`, `secondary`, `ghost`, `link` |
+| Input | components/ui/input.tsx | `type`, `className`, `placeholder`, `disabled`, `value`, `onChange`, `...rest` | N/A |
+| Card | components/ui/card.tsx | `className`, `...rest` | N/A |
+| Dialog | components/ui/dialog.tsx | `open`, `onOpenChange`, `className` | N/A |
+| Select | components/ui/select.tsx | `value`, `onValueChange`, `defaultValue`, `disabled`, `placeholder`, `className`, `position` | N/A |
