@@ -2,7 +2,7 @@
 
 import { PageContainer } from "@/components/layout/page-container"
 import { PageHeader } from "@/components/layout/page-header"
-import { Bot, SparklesIcon } from "lucide-react"
+import { Bot, SparklesIcon, Github, BookOpen, Menu, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { ToolsPanel } from "@/components/tools-panel"
 import { useState } from "react"
