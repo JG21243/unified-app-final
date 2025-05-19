@@ -64,7 +64,7 @@ async function PromptDataView({ promptId }: { promptId: number }) {
               </span>
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {tags.map((tag) => ( // Assuming tag is a string if id and name are not properties
+                  {tags.map((tag) => (
                     <span key={tag} className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
                       {tag}
                     </span>
@@ -75,15 +75,15 @@ async function PromptDataView({ promptId }: { promptId: number }) {
           }
           actions={
             <div className="flex flex-wrap gap-3">
-              <Link href={`/prompts/${promptId}/edit`} passHref legacyBehavior>
-                <Button variant="outline" asChild={false}> {/* Removed asChild or set to false, ensure Link handles styling or Button wraps Link content */}
-                  <Pencil className="h-4 w-4 mr-2" /> {/* Added margin for icon spacing */}
+              <Link href={`/prompts/${promptId}/edit`} passHref>
+                <Button variant="outline">
+                  <Pencil className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
               </Link>
-              <Link href="/chat" passHref legacyBehavior>
-                <Button variant="outline" asChild={false}> {/* Removed asChild or set to false */}
-                  <MessageSquare className="h-4 w-4 mr-2" /> {/* Added margin for icon spacing */}
+              <Link href="/chat" passHref>
+                <Button variant="outline">
+                  <MessageSquare className="h-4 w-4 mr-2" />
                   Test in Chat
                 </Button>
               </Link>
