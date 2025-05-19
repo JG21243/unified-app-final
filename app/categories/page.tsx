@@ -10,19 +10,7 @@ import { CategoryManagerSkeleton } from "@/components/category-manager-skeleton"
 
 async function CategoriesList() {
   try {
-    const { data: categories, error } = await getCategories()
-
-    if (error) {
-      return (
-        <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-5 w-5 text-red-700 flex-shrink-0" />
-            <h2 className="text-xl font-semibold">Error Loading Categories</h2>
-          </div>
-          <p>{error.message || "An unknown error occurred."}</p>
-        </div>
-      )
-    }
+    const categories = await getCategories()
 
     if (!categories || categories.length === 0) {
       return (
@@ -42,7 +30,7 @@ async function CategoriesList() {
       <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-red-50 border border-red-200 rounded-lg text-red-700">
         <div className="flex items-center gap-2 mb-2">
           <AlertTriangle className="h-5 w-5 text-red-700 flex-shrink-0" />
-          <h2 className="text-xl font-semibold">Error</h2>
+          <h2 className="text-xl font-semibold">Error Loading Categories</h2>
         </div>
         <p>An unexpected error occurred while loading categories.</p>
         <p className="mt-2 text-sm font-mono">{e.message}</p>
