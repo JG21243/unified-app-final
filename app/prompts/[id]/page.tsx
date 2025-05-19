@@ -1,15 +1,17 @@
-import { notFound } from "next/navigation"
-import { PromptTesterStreaming } from "@/components/prompt-tester-streaming"
-import { getLegalPromptById, getPromptTags } from "@/app/actions"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDate } from "@/lib/utils"
-import { BarChart2, Pencil } from "lucide-react"
+import { Suspense } from "react"
 import Link from "next/link"
-import { PromptActions } from "@/components/prompt-actions"
+import { Plus, Inbox, AlertTriangle, Pencil, MessageSquare } from "lucide-react" // Added Pencil and MessageSquare
+
+import { getPrompts, getLegalPromptById, getPromptTags } from "@/app/actions" // Added getLegalPromptById and getPromptTags
+import { PromptCardSkeleton } from "@/components/prompt-card-skeleton"
+import { Button } from "@/components/ui/button"
 import { PageContainer } from "@/components/layout/page-container"
-import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/layout/page-header"
+import { notFound } from "next/navigation" // Added notFound
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card" // Added Card components
+import { Skeleton } from "@/components/ui/skeleton" // Added Skeleton
+import { PromptActions } from "@/components/prompt-actions" // Added PromptActions
+import { PromptTesterStreaming } from "@/components/prompt-tester-streaming" // Added PromptTesterStreaming
 
 interface PromptPageProps {
   params: {
@@ -38,32 +40,42 @@ export default async function PromptPage({ params }: PromptPageProps) {
 
   return (
     <PageContainer>
-      <div className="mb-6 sm:mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">{prompt.name}</h1>
+      <PageHeader
+        title={prompt.name}
+        description={
           <div className="flex flex-wrap items-center gap-3 mt-2">
-            <Badge variant="secondary" className="px-2 py-1">
-              {prompt.category}
-            </Badge>
-            <p className="text-xs sm:text-sm text-muted-foreground">Created {formatDate(prompt.createdAt)}</p>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+              {prompt.category || "Uncategorized"}
+            </span>
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {tags.map((tag) => (
+                  <span key={tag.id} className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild variant="outline" className="gap-2">
-            <Link href={`/prompts/${promptId}/edit`}>
-              <Pencil className="h-4 w-4" />
-              <span className="hidden sm:inline">Edit</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="gap-2">
-            <Link href={`/prompts/${promptId}/analytics`}>
-              <BarChart2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
-            </Link>
-          </Button>
-          <PromptActions promptId={promptId} promptName={prompt.name} />
-        </div>
-      </div>
+        }
+        actions={
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" asChild>
+              <Link href={`/prompts/${promptId}/edit`} className="gap-2">
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/chat" className="gap-2"> {/* Assuming a general chat page, adjust if needed */}
+                <MessageSquare className="h-4 w-4" />
+                Test in Chat
+              </Link>
+            </Button>
+            <PromptActions promptId={promptId} promptName={prompt.name} />
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
         <div className="space-y-8">

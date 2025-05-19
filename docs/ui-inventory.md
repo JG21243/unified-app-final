@@ -162,6 +162,31 @@ While the table below provides a quick overview of components, it's crucial to m
 
 ---
 
+**Example: Textarea Component (`components/ui/textarea.tsx`)**
+
+*   **Description:** A form control for multi-line text input.
+*   **When to Use:**
+    *   For capturing longer pieces of text, such as comments, descriptions, messages, or code snippets.
+    *   When users need to input more than a single line of text.
+*   **Props:**
+    *   `className`: (Optional) Additional CSS classes to apply for custom styling.
+    *   `placeholder`: (Optional) Text displayed in the textarea when it is empty.
+    *   `disabled`: (Optional) Boolean. If true, the textarea is disabled and cannot be interacted with.
+    *   `value`: (Optional) The current value of the textarea (for controlled components).
+    *   `onChange`: (Optional) Function called when the textarea value changes.
+    *   `rows`: (Optional) Number. Specifies the visible height of the textarea in lines. The default styling sets `min-h-5xl` and `resize-none`.
+    *   `cols`: (Optional) Number. Specifies the visible width of the textarea in characters.
+    *   `...rest`: Any other valid HTML textarea attributes (e.g., `maxLength`, `minLength`, `required`, `id`, `name`, `readOnly`).
+*   **Do\'s:**
+    *   Always use a corresponding `<label>` component for accessibility, associating it with the textarea using `htmlFor` and `id` attributes.
+    *   Provide a reasonable default size (e.g., using `rows` or CSS height) that accommodates typical input length.
+    *   Consider if resizing should be enabled (default is `resize-none` in this component, which is often good for consistency, but can be overridden via `className`).
+*   **Don'ts:**
+    *   Don't use a `<textarea>` for single-line input; use `<input type="text">` instead.
+    *   Avoid making the default size too small if users frequently input large amounts of text.
+
+---
+
 | Component | Path | Props | Variants |
 | --- | --- | --- | --- |
 | Button | components/ui/Button.tsx | `variant`, `size`, `asChild`, `...rest` | `default`, `destructive`, `outline`, `secondary`, `ghost`, `link` |
@@ -169,3 +194,4 @@ While the table below provides a quick overview of components, it's crucial to m
 | Card | components/ui/card.tsx | `className`, `...rest` | N/A |
 | Dialog | components/ui/dialog.tsx | `open`, `onOpenChange`, `className` | N/A |
 | Select | components/ui/select.tsx | `value`, `onValueChange`, `defaultValue`, `disabled`, `placeholder`, `className`, `position` | N/A |
+| Textarea | components/ui/textarea.tsx | `className`, `placeholder`, `disabled`, `value`, `onChange`, `rows`, `cols`, `...rest` | N/A |

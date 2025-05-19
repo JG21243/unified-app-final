@@ -1,21 +1,19 @@
 "use client"
 
-import { useState } from "react"
-import { Menu, X, Bot, Github, BookOpen, SparklesIcon } from "lucide-react"
-import Assistant from "@/components/assistant"
-import ToolsPanel from "@/components/tools-panel"
+import { PageContainer } from "@/components/layout/page-container"
+import { PageHeader } from "@/components/layout/page-header"
+import { Bot, SparklesIcon } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
+import { ToolsPanel } from "@/components/tools-panel"
+import { useState } from "react"
 
 // Header component for the app
 const AppHeader = () => (
-  <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm sticky top-0 z-10">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center h-16">
-        <AppLogo />
-        <NavActions />
-      </div>
-    </div>
-  </header>
+  <PageHeader
+    title={<AppLogo />}
+    actions={<NavActions />}
+    className="sticky top-0 z-10 bg-background border-b shadow-sm px-4 sm:px-6 lg:px-8"
+  />
 )
 
 // App logo and title component

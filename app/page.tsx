@@ -11,6 +11,17 @@ import { PageHeader } from "@/components/layout/page-header"
 export default async function Home() {
   return (
     <PageContainer>
+      <PageHeader
+        title="Prompts"
+        actions={
+          <Link href="/prompts/new" passHref>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Prompt
+            </Button>
+          </Link>
+        }
+      />
       <Suspense fallback={<PromptListSkeleton />}>
         <PromptList />
       </Suspense>
