@@ -4,8 +4,9 @@ import { PageContainer } from "@/components/layout/page-container"
 import { PageHeader } from "@/components/layout/page-header"
 import { Bot, SparklesIcon, Github, BookOpen, Menu, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
-import { ToolsPanel } from "@/components/tools-panel"
+import ContextPanel from "@/components/tools-panel" // Corrected: ToolsPanel is default export named ContextPanel
 import { useState } from "react"
+import Assistant from "@/components/assistant" // Added import for Assistant
 
 // Header component for the app
 const AppHeader = () => (
@@ -96,13 +97,13 @@ const MobileToolsPanel = ({ isOpen, onClose }: MobileToolsPanelProps) =>
             <X size={20} className="text-gray-800 dark:text-gray-200" />
           </button>
         </div>
-        <ToolsPanel />
+        <ContextPanel /> {/* Corrected: Use ContextPanel */}
       </div>
     </div>
   ) : null
 
 // Placeholder Assistant component
-const Assistant = () => (
+const AssistantPlaceholder = () => (
   <div className="flex flex-col h-full">
     {/* Placeholder for Assistant content */}
     <div className="flex-1 p-4">
@@ -122,11 +123,11 @@ export default function ChatPage() {
       {/* Main Content */}
       <div className="flex flex-1 w-full max-w-7xl mx-auto shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg my-4 overflow-hidden">
         <div className="w-full md:w-[70%] border-r border-gray-100 dark:border-gray-800">
-          <Assistant />
+          <AssistantPlaceholder />
         </div>
         <div className="hidden md:block w-[30%] bg-white dark:bg-gray-900">
           <ConfigPanelHeader />
-          <ToolsPanel />
+          <ContextPanel />
         </div>
 
         {/* Mobile menu button */}
