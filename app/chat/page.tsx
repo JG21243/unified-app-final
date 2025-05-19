@@ -101,6 +101,16 @@ const MobileToolsPanel = ({ isOpen, onClose }: MobileToolsPanelProps) =>
     </div>
   ) : null
 
+// Placeholder Assistant component
+const Assistant = () => (
+  <div className="flex flex-col h-full">
+    {/* Placeholder for Assistant content */}
+    <div className="flex-1 p-4">
+      <p className="text-center text-gray-500 dark:text-gray-400">Assistant UI will be here.</p>
+    </div>
+  </div>
+);
+
 // Main component
 export default function ChatPage() {
   const [isToolsPanelOpen, setIsToolsPanelOpen] = useState(false)
