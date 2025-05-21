@@ -23,11 +23,11 @@ export type LegalPrompt = {
 
 export type PromptError = {
   message: string
-  errors?: Record<string, string>
+  errors?: Record<string, string> // For Zod field errors, string array might be more direct from .flatten()
   code?: string
 }
 
-export async function getPrompts() {
+export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: string | null }> {
   try {
     // Check if DATABASE_URL is available
     if (!process.env.DATABASE_URL) {
@@ -38,14 +38,21 @@ export async function getPrompts() {
       }
     }
 
-    // Use the tagged template syntax for the Neon client
     const result = await sql`
-      SELECT * FROM legalprompt 
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+      FROM legalprompt 
       ORDER BY "createdAt" DESC
     `
+    const prompts: LegalPrompt[] = result.map(p => ({
+      ...p,
+      variables: p.prompt ? extractVariables(p.prompt as string) : [],
+      usageCount: p.usageCount || 0,
+      isFavorite: p.isFavorite || false
+    })) as LegalPrompt[]
 
-    return { prompts: result, error: null }
-  } catch (error) {
+    return { prompts, error: null }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Failed to fetch prompts:", error)
     return {
       prompts: [],
@@ -54,22 +61,29 @@ export async function getPrompts() {
   }
 }
 
-export async function getPromptById(id: number) {
+export async function getPromptById(id: number): Promise<LegalPrompt | undefined> {
   try {
     const result = await sql`
-      SELECT * FROM legalprompt
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+      FROM legalprompt
       WHERE id = ${id}
     `
-    return result[0]
-  } catch (error) {
-    console.error("Failed to fetch prompt:", error)
-    throw new Error("Failed to fetch prompt")
+    if (result.length === 0) return undefined
+    const p = result[0]
+    return {
+      ...p,
+      variables: p.prompt ? extractVariables(p.prompt as string) : [],
+      usageCount: p.usageCount || 0,
+      isFavorite: p.isFavorite || false
+    } as LegalPrompt | undefined
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error(`Failed to fetch prompt by ID ${id}:`, error)
+    throw new Error(`Failed to fetch prompt by ID ${id}: ${error.message}`)
   }
 }
 
-/**
- * Get all prompts with enhanced filtering, pagination, and error handling
- */
+
 export async function getLegalPrompts(options?: {
   search?: string
   category?: string[]
@@ -81,37 +95,39 @@ export async function getLegalPrompts(options?: {
   favoritesOnly?: boolean
 }): Promise<{ prompts: LegalPrompt[]; total: number }> {
   try {
-    // Set default limit to avoid retrieving too much data
     const limit = options?.limit || 10
     const offset = options?.offset || 0
 
-    // This is a simplified implementation - in a real app, you would build
-    // the query dynamically based on the options
     const result = await sql`
-      SELECT * FROM legalprompt
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+      FROM legalprompt
       ORDER BY "createdAt" DESC
       LIMIT ${limit} OFFSET ${offset}
     `
 
-    // Get total count
-    const countResult = await sql`SELECT COUNT(*) as total FROM legalprompt`
-    const total = Number.parseInt(countResult[0].total)
+    const prompts: LegalPrompt[] = result.map(p => ({
+      ...p,
+      variables: p.prompt ? extractVariables(p.prompt as string) : [],
+      usageCount: p.usageCount || 0,
+      isFavorite: p.isFavorite || false
+    })) as LegalPrompt[]
 
-    return { prompts: result, total }
-  } catch (error) {
+    const countResult = await sql`SELECT COUNT(*) as total FROM legalprompt`
+    const total = Number.parseInt(countResult[0].total as string)
+
+    return { prompts, total }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Error fetching prompts:", error)
-    // Return empty results instead of throwing to prevent page errors
     return { prompts: [], total: 0 }
   }
 }
 
-/**
- * Get a single prompt by ID with enhanced error handling
- */
+
 export async function getLegalPromptById(id: number): Promise<LegalPrompt | null> {
   try {
     const results = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt"
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
       FROM legalprompt 
       WHERE id = ${id}
     `
@@ -120,18 +136,24 @@ export async function getLegalPromptById(id: number): Promise<LegalPrompt | null
       return null
     }
 
-    // Extract variables from the prompt
-    const prompt = results[0]
-    const variables = extractVariables(prompt.prompt)
+    const p = results[0]
+    const variables = p.prompt ? extractVariables(p.prompt as string) : []
 
-    // Instead of querying the non-existent prompt_usage table,
-    // we'll return a default value for usageCount
-    return {
-      ...prompt,
+    const legalPrompt: LegalPrompt = {
+      id: p.id as number,
+      name: p.name as string,
+      prompt: p.prompt as string,
+      category: p.category as string,
+      systemMessage: p.systemMessage as string | null,
+      createdAt: p.createdAt as string,
+      updatedAt: p.updatedAt as string | undefined,
       variables,
-      usageCount: 0, // Default value since the table doesn't exist
+      usageCount: p.usageCount || 0,
+      isFavorite: p.isFavorite || false,
     }
-  } catch (error) {
+    return legalPrompt
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error(`Error fetching prompt ${id}:`, error)
     return null
   }
@@ -144,7 +166,6 @@ export async function createPrompt(formData: FormData) {
     const content = formData.get("content") as string
     const category = formData.get("category") as string
 
-    // Create a new Date object for the current time
     const createdAt = new Date().toISOString()
 
     await sql`
@@ -154,63 +175,80 @@ export async function createPrompt(formData: FormData) {
 
     revalidatePath("/")
     redirect("/")
-  } catch (error) {
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Failed to create prompt:", error)
-    throw new Error("Failed to create prompt")
+    throw new Error(`Failed to create prompt: ${error.message}`)
   }
 }
 
-/**
- * Create a new prompt with enhanced validation
- */
+
 export async function createLegalPrompt(
   data: z.infer<typeof promptSchema>,
 ): Promise<{ success: boolean; data?: LegalPrompt; error?: PromptError }> {
   try {
-    // Validate the input data using Zod
     const validationResult = promptSchema.safeParse(data)
 
     if (!validationResult.success) {
+      const fieldErrors = validationResult.error.flatten().fieldErrors
+      const formattedErrors: Record<string, string> = {}
+      for (const key in fieldErrors) {
+        const errorArray = fieldErrors[key as keyof typeof fieldErrors]
+        if (errorArray && errorArray.length > 0) {
+          formattedErrors[key] = errorArray[0]
+        }
+      }
       return {
         success: false,
         error: {
           message: "Validation failed",
-          errors: validationResult.error.format(),
+          errors: formattedErrors,
           code: "VALIDATION_ERROR",
         },
       }
     }
 
-    // Sanitize inputs to prevent XSS
     const sanitizedData = {
       name: sanitizeInput(data.name),
-      prompt: data.prompt, // Don't sanitize prompt as it may contain intentional special characters
+      prompt: data.prompt, 
       category: sanitizeInput(data.category),
       systemMessage: data.systemMessage ? data.systemMessage : null,
     }
 
-    // Insert the new prompt
     const result = await sql`
       INSERT INTO legalprompt (name, prompt, category, "systemMessage")
       VALUES (${sanitizedData.name}, ${sanitizedData.prompt}, ${sanitizedData.category}, ${sanitizedData.systemMessage})
       RETURNING id, name, prompt, category, "systemMessage", "createdAt"
     `
+    
+    const newPrompt = result[0]
 
     revalidatePath("/")
-    return { success: true, data: result[0] }
-  } catch (error) {
+    return { 
+      success: true, 
+      data: { 
+        id: newPrompt.id as number,
+        name: newPrompt.name as string,
+        prompt: newPrompt.prompt as string,
+        category: newPrompt.category as string,
+        systemMessage: newPrompt.systemMessage as string | null,
+        createdAt: newPrompt.createdAt as string,
+        variables: extractVariables(newPrompt.prompt as string),
+        usageCount: 0,
+        isFavorite: false
+      }
+    }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Error creating prompt:", error)
 
-    // Handle specific database errors
-    if (error instanceof Error) {
-      if (error.message.includes("duplicate key")) {
-        return {
-          success: false,
-          error: {
-            message: "A prompt with this name already exists.",
-            code: "DUPLICATE_ERROR",
-          },
-        }
+    if (error.message.includes("duplicate key")) {
+      return {
+        success: false,
+        error: {
+          message: "A prompt with this name already exists.",
+          code: "DUPLICATE_ERROR",
+        },
       }
     }
 
@@ -243,23 +281,21 @@ export async function updatePrompt(id: number, formData: FormData) {
     revalidatePath(`/prompts/${id}`)
     revalidatePath("/")
     redirect(`/prompts/${id}`)
-  } catch (error) {
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Failed to update prompt:", error)
-    throw new Error("Failed to update prompt")
+    throw new Error(`Failed to update prompt: ${error.message}`)
   }
 }
 
-/**
- * Update an existing prompt with enhanced validation and error handling
- */
+
 export async function updateLegalPrompt(
   id: number,
   data: Partial<z.infer<typeof promptSchema>>,
 ): Promise<{ success: boolean; data?: LegalPrompt; error?: PromptError }> {
   try {
-    // Get the current data to merge with updates
     const currentResults = await sql`
-      SELECT id, name, prompt, category, "systemMessage" 
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt" 
       FROM legalprompt 
       WHERE id = ${id}
     `
@@ -276,29 +312,34 @@ export async function updateLegalPrompt(
 
     const current = currentResults[0]
 
-    // Merge the existing data with the updates
     const updatedData = {
-      name: data.name !== undefined ? data.name : current.name,
-      prompt: data.prompt !== undefined ? data.prompt : current.prompt,
-      category: data.category !== undefined ? data.category : current.category,
-      systemMessage: data.systemMessage !== undefined ? data.systemMessage : current.systemMessage,
+      name: data.name !== undefined ? data.name : current.name as string,
+      prompt: data.prompt !== undefined ? data.prompt : current.prompt as string,
+      category: data.category !== undefined ? data.category : current.category as string,
+      systemMessage: data.systemMessage !== undefined ? data.systemMessage : current.systemMessage as string | null,
     }
 
-    // Validate the merged data
     const validationResult = promptSchema.safeParse(updatedData)
 
     if (!validationResult.success) {
+      const fieldErrors = validationResult.error.flatten().fieldErrors
+      const formattedErrors: Record<string, string> = {}
+      for (const key in fieldErrors) {
+        const errorArray = fieldErrors[key as keyof typeof fieldErrors]
+        if (errorArray && errorArray.length > 0) {
+          formattedErrors[key] = errorArray[0]
+        }
+      }
       return {
         success: false,
         error: {
           message: "Validation failed",
-          errors: validationResult.error.format(),
+          errors: formattedErrors,
           code: "VALIDATION_ERROR",
         },
       }
     }
 
-    // Sanitize inputs
     const sanitizedData = {
       name: sanitizeInput(updatedData.name),
       prompt: updatedData.prompt,
@@ -306,7 +347,6 @@ export async function updateLegalPrompt(
       systemMessage: updatedData.systemMessage,
     }
 
-    // Update the prompt
     const result = await sql`
       UPDATE legalprompt 
       SET name = ${sanitizedData.name}, 
@@ -314,13 +354,30 @@ export async function updateLegalPrompt(
           category = ${sanitizedData.category}, 
           "systemMessage" = ${sanitizedData.systemMessage}
       WHERE id = ${id} 
-      RETURNING id, name, prompt, category, "systemMessage", "createdAt"
+      RETURNING id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
     `
+    
+    const updatedPrompt = result[0]
 
     revalidatePath("/")
     revalidatePath(`/prompts/${id}`)
-    return { success: true, data: result[0] }
-  } catch (error) {
+    return { 
+      success: true, 
+      data: {
+        id: updatedPrompt.id as number,
+        name: updatedPrompt.name as string,
+        prompt: updatedPrompt.prompt as string,
+        category: updatedPrompt.category as string,
+        systemMessage: updatedPrompt.systemMessage as string | null,
+        createdAt: updatedPrompt.createdAt as string,
+        updatedAt: updatedPrompt.updatedAt as string | undefined,
+        variables: extractVariables(updatedPrompt.prompt as string),
+        usageCount: current.usageCount || 0,
+        isFavorite: current.isFavorite || false
+      }
+    }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error(`Error updating prompt ${id}:`, error)
     return {
       success: false,
@@ -337,9 +394,10 @@ export async function deletePrompt(id: number) {
     await sql`DELETE FROM legalprompt WHERE id = ${id}`
     revalidatePath("/")
     redirect("/")
-  } catch (error) {
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Failed to delete prompt:", error)
-    throw new Error("Failed to delete prompt")
+    throw new Error(`Failed to delete prompt: ${error.message}`)
   }
 }
 
@@ -359,9 +417,8 @@ export async function duplicateLegalPrompt(
   id: number,
 ): Promise<{ success: boolean; data?: LegalPrompt; error?: string }> {
   try {
-    // First, get the prompt to duplicate
     const results = await sql`
-      SELECT name, prompt, category, "systemMessage"
+      SELECT name, prompt, category, "systemMessage", "createdAt"
       FROM legalprompt 
       WHERE id = ${id}
     `
@@ -375,24 +432,38 @@ export async function duplicateLegalPrompt(
 
     const originalPrompt = results[0]
 
-    // Create a copy with "Copy of" prefix
-    const newPrompt = {
-      name: `Copy of ${originalPrompt.name}`,
-      prompt: originalPrompt.prompt,
-      category: originalPrompt.category,
-      systemMessage: originalPrompt.systemMessage,
+    const newPromptData = {
+      name: `Copy of ${originalPrompt.name as string}`,
+      prompt: originalPrompt.prompt as string,
+      category: originalPrompt.category as string,
+      systemMessage: originalPrompt.systemMessage as string | null,
     }
 
-    // Insert the new prompt
     const insertResult = await sql`
       INSERT INTO legalprompt (name, prompt, category, "systemMessage")
-      VALUES (${newPrompt.name}, ${newPrompt.prompt}, ${newPrompt.category}, ${newPrompt.systemMessage}) 
+      VALUES (${newPromptData.name}, ${newPromptData.prompt}, ${newPromptData.category}, ${newPromptData.systemMessage}) 
       RETURNING id, name, prompt, category, "systemMessage", "createdAt"
     `
+    
+    const newDbPrompt = insertResult[0]
 
     revalidatePath("/")
-    return { success: true, data: insertResult[0] }
-  } catch (error) {
+    return { 
+      success: true, 
+      data: {
+        id: newDbPrompt.id as number,
+        name: newDbPrompt.name as string,
+        prompt: newDbPrompt.prompt as string,
+        category: newDbPrompt.category as string,
+        systemMessage: newDbPrompt.systemMessage as string | null,
+        createdAt: newDbPrompt.createdAt as string,
+        variables: extractVariables(newDbPrompt.prompt as string),
+        usageCount: 0,
+        isFavorite: false
+      }
+    }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error(`Error duplicating prompt ${id}:`, error)
     return {
       success: false,
@@ -401,24 +472,23 @@ export async function duplicateLegalPrompt(
   }
 }
 
-/**
- * Delete a prompt
- */
+
 export async function deleteLegalPrompt(id: number): Promise<{ success: boolean; error?: string }> {
   try {
     await sql`DELETE FROM legalprompt WHERE id = ${id}`
     revalidatePath("/")
     return { success: true }
-  } catch (error) {
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error(`Error deleting prompt ${id}:`, error)
     return {
       success: false,
-      error: "Failed to delete prompt. Please try again.",
+      error: `Failed to delete prompt: ${error.message}`,
     }
   }
 }
 
-export async function bulkDeletePrompts(ids: string[]) {
+export async function bulkDeletePrompts(ids: string[]): Promise<{ success?: string; error?: string }> {
   try {
     if (!ids || ids.length === 0) {
       return { error: "No prompts selected for deletion." }
@@ -426,37 +496,34 @@ export async function bulkDeletePrompts(ids: string[]) {
 
     const numericIds = ids.map((id) => Number.parseInt(id))
 
-    // This is a simplified approach - in a real app, you would use a more efficient method
     for (const id of numericIds) {
       await sql`DELETE FROM legalprompt WHERE id = ${id}`
     }
 
     revalidatePath("/")
     return { success: `${ids.length} prompts deleted successfully.` }
-  } catch (error) {
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Failed to delete prompts:", error)
-    return { error: "Failed to delete prompts." }
+    return { error: `Failed to delete prompts: ${error.message}` }
   }
 }
 
-/**
- * Get all unique categories
- */
+
 export async function getCategories(): Promise<string[]> {
   try {
     const results = await sql`
       SELECT DISTINCT category FROM legalprompt ORDER BY category
     `
-    return results.map((row) => row.category)
-  } catch (error) {
+    return results.map((row: any) => row.category as string)
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Error fetching categories:", error)
     return []
   }
 }
 
-/**
- * Get prompt statistics
- */
+
 export async function getPromptStats(): Promise<{
   total: number
   byCategory: Record<string, number>
@@ -465,11 +532,9 @@ export async function getPromptStats(): Promise<{
   mostUsed: { name: string; count: number }[]
 }> {
   try {
-    // Get total count
     const totalResult = await sql`SELECT COUNT(*) as count FROM legalprompt`
-    const total = Number.parseInt(totalResult[0].count)
+    const total = Number.parseInt(String(totalResult[0].count))
 
-    // Get count by category
     const categoryResults = await sql`
       SELECT category, COUNT(*) as count 
       FROM legalprompt 
@@ -478,23 +543,20 @@ export async function getPromptStats(): Promise<{
     `
 
     const byCategory: Record<string, number> = {}
-    categoryResults.forEach((row) => {
-      byCategory[row.category] = Number.parseInt(row.count)
+    categoryResults.forEach((row: any) => {
+      byCategory[row.category as string] = Number.parseInt(String(row.count))
     })
 
-    // Get recently created count (last 7 days)
     const recentlyCreatedResult = await sql`
       SELECT COUNT(*) as count 
       FROM legalprompt 
       WHERE "createdAt" > NOW() - INTERVAL '7 days'
     `
 
-    const recentlyCreated = Number.parseInt(recentlyCreatedResult[0].count)
+    const recentlyCreated = Number.parseInt(String(recentlyCreatedResult[0].count))
 
-    // Since updatedAt doesn't exist, use createdAt as a fallback
     const recentlyUpdated = recentlyCreated
 
-    // Mock most used prompts since we don't have the prompt_usage table
     const mostUsed = [
       { name: "Contract Review", count: 42 },
       { name: "Legal Research", count: 38 },
@@ -508,7 +570,8 @@ export async function getPromptStats(): Promise<{
       recentlyUpdated,
       mostUsed,
     }
-  } catch (error) {
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
     console.error("Error fetching prompt statistics:", error)
     return {
       total: 0,
