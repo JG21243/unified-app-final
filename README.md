@@ -16,7 +16,7 @@ This project combines the features of a general AI assistant starter app with fu
 - **Multi-turn Conversation** - Natural, contextual conversation handling
 - **Vector Store Integration** - Upload and search through your documents
 - **Web Search Capabilities** - AI-powered web search tool integration
-- **File Search & Processing** - Upload and analyze PDF, code, and text files up to 10MB
+- **File Search & Processing** - Upload and analyze PDF, code, and text files up to 25MB
 - **Function Calling** - Custom function implementation for extended capabilities
 - **Streaming Responses** - Real-time streaming of AI responses
 - **Rich Content Display** - Support for markdown, code highlighting, and annotations
@@ -134,7 +134,7 @@ Several files in the `config/` directory allow for deeper customization:
 
 Upload and search through your documents using the integrated vector store:
 - Support for code files, PDFs, text documents, and more
-- File size limit of 10MB
+- File size limit of 25MB
 - Create and manage vector stores for document collections
 The system uses a default vector store, as defined in `config/constants.ts`. This may be relevant for users looking to customize their setup or integrate their own vector store solutions.
 
