@@ -141,7 +141,7 @@ export default function FileUpload({
     onDrop,
     multiple: false,
     accept: acceptedFileTypes,
-    maxSize: 10485760, // 10MB
+    maxSize: 26214400, // 25MB
     onDropRejected: (fileRejections: any[]) => {
       console.error("Rejected files:", fileRejections)
     },
@@ -429,7 +429,7 @@ export default function FileUpload({
                       : 'Drag & drop or click to browse'}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Supports code files, documents, and PDFs up to 10MB
+                    Supports code files, documents, and PDFs up to 25MB
                   </p>
                 </div>
               </div>
