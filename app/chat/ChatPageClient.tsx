@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle"
 import ContextPanel from "@/components/tools-panel" // Corrected: ToolsPanel is default export named ContextPanel
 import { useState } from "react"
 import Assistant from "@/components/assistant" // Added import for Assistant
+import ChatPromptSelector from "@/components/chat-prompt-selector"
 
 // Header component for the app
 const AppHeader = () => (
@@ -117,7 +118,8 @@ export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
 
       {/* Main Content */}
       <div className="flex flex-1 w-full max-w-7xl mx-auto shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg my-4 overflow-hidden">
-        <div className="w-full md:w-[70%] border-r border-gray-100 dark:border-gray-800">
+        <div className="w-full md:w-[70%] border-r border-gray-100 dark:border-gray-800 flex flex-col">
+          <ChatPromptSelector />
           <Assistant initialInputMessage={initialPrompt} />
         </div>
         <div className="hidden md:block w-[30%] bg-white dark:bg-gray-900">
