@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { FileText, BarChart2, Tag, Plus, Menu } from "lucide-react"
+import { FileText, BarChart2, Tag, Bot, Plus, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { CommandMenu } from "@/components/command-menu"
@@ -24,6 +24,11 @@ export function GlobalHeader() {
       name: "Dashboard",
       path: "/?tab=dashboard",
       icon: BarChart2,
+    },
+    {
+      name: "Chat",
+      path: "/chat",
+      icon: Bot,
     },
     {
       name: "Categories",
