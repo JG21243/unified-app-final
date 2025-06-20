@@ -129,7 +129,14 @@ export function EnhancedDashboard() {
   }))
 
   // Colors for charts
-  const COLORS = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
+  const COLORS = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+    "hsl(var(--primary))",
+  ]
 
   return (
     <div className="space-y-8">
@@ -151,7 +158,7 @@ export function EnhancedDashboard() {
           <Card className="transition-all hover:shadow-md hover:border-primary/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4 text-blue-500" />
+                <Clock className="h-4 w-4 text-primary" />
                 Recently Created
               </CardTitle>
               <CardDescription>Last 7 days</CardDescription>
@@ -164,7 +171,7 @@ export function EnhancedDashboard() {
           <Card className="transition-all hover:shadow-md hover:border-primary/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Tag className="h-4 w-4 text-green-500" />
+                <Tag className="h-4 w-4 text-primary" />
                 Categories
               </CardTitle>
               <CardDescription>Total categories</CardDescription>
@@ -177,7 +184,7 @@ export function EnhancedDashboard() {
           <Card className="transition-all hover:shadow-md hover:border-primary/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-amber-500" />
+                <TrendingUp className="h-4 w-4 text-primary" />
                 Avg. Variables
               </CardTitle>
               <CardDescription>Per prompt</CardDescription>
@@ -247,7 +254,7 @@ export function EnhancedDashboard() {
                               <XAxis type="number" />
                               <YAxis type="category" dataKey="name" width={100} />
                               <Tooltip />
-                              <Bar dataKey="value" fill="#4f46e5" radius={[0, 4, 4, 0]} />
+                              <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                             </BarChart>
                           </ResponsiveContainer>
                         ) : chartType === "pie" ? (
@@ -259,7 +266,7 @@ export function EnhancedDashboard() {
                                 cy="50%"
                                 labelLine={false}
                                 outerRadius={100}
-                                fill="#8884d8"
+                                fill="hsl(var(--primary))"
                                 dataKey="value"
                                 nameKey="name"
                                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
@@ -278,7 +285,7 @@ export function EnhancedDashboard() {
                               <XAxis dataKey="name" />
                               <YAxis />
                               <Tooltip />
-                              <Line type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={2} />
+                              <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
                             </LineChart>
                           </ResponsiveContainer>
                         )
@@ -304,12 +311,12 @@ export function EnhancedDashboard() {
                         <AreaChart data={USAGE_DATA} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                             </linearGradient>
                             <linearGradient id="colorCompletion" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                              <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
                             </linearGradient>
                           </defs>
                           <XAxis dataKey="month" />
@@ -320,14 +327,14 @@ export function EnhancedDashboard() {
                           <Area
                             type="monotone"
                             dataKey="usage"
-                            stroke="#4f46e5"
+                            stroke="hsl(var(--primary))"
                             fillOpacity={1}
                             fill="url(#colorUsage)"
                           />
                           <Area
                             type="monotone"
                             dataKey="completion"
-                            stroke="#10b981"
+                            stroke="hsl(var(--chart-2))"
                             fillOpacity={1}
                             fill="url(#colorCompletion)"
                           />
@@ -353,8 +360,8 @@ export function EnhancedDashboard() {
                           <YAxis />
                           <Tooltip />
                           <Legend />
-                          <Bar dataKey="created" fill="#4f46e5" name="Created" />
-                          <Bar dataKey="edited" fill="#f59e0b" name="Edited" />
+                          <Bar dataKey="created" fill="hsl(var(--primary))" name="Created" />
+                          <Bar dataKey="edited" fill="hsl(var(--chart-4))" name="Edited" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -379,7 +386,7 @@ export function EnhancedDashboard() {
                       <Tooltip formatter={(value) => [`${value}%`, "Effectiveness"]} />
                       <Bar
                         dataKey="effectiveness"
-                        fill="#4f46e5"
+                        fill="hsl(var(--primary))"
                         radius={[0, 4, 4, 0]}
                         label={{ position: "right", formatter: (value) => `${value}%` }}
                       />
@@ -398,7 +405,7 @@ export function EnhancedDashboard() {
                 <div className="space-y-4">
                   <div className="bg-muted/50 p-4 rounded-lg">
                     <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <TrendingUp className="h-4 w-4 text-primary" />
                       Top Performing Category
                     </h4>
                     <p className="text-sm text-muted-foreground">
@@ -408,7 +415,7 @@ export function EnhancedDashboard() {
 
                   <div className="bg-muted/50 p-4 rounded-lg">
                     <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-500" />
+                      <Users className="h-4 w-4 text-primary" />
                       User Engagement
                     </h4>
                     <p className="text-sm text-muted-foreground">

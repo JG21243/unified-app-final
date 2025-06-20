@@ -23,7 +23,7 @@ const AppLogo = () => (
     <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-full p-1.5 mr-2">
       <Bot size={20} />
     </div>
-    <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center">
+    <h1 className="text-lg font-semibold text-foreground flex items-center">
       AI Assistant
       <ModelBadge />
     </h1>
@@ -46,7 +46,7 @@ const NavActions = () => (
         href="https://github.com/openai/openai-responses-starter-app"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors flex items-center gap-1.5"
+        className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
       >
         <Github size={16} />
         <span>GitHub</span>
@@ -55,7 +55,7 @@ const NavActions = () => (
         href="https://platform.openai.com/docs"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors flex items-center gap-1.5"
+        className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
       >
         <BookOpen size={16} />
         <span>Docs</span>
@@ -68,7 +68,7 @@ const NavActions = () => (
 // Configuration panel header component
 const ConfigPanelHeader = () => (
   <div className="p-4 border-b border-gray-100 dark:border-gray-800">
-    <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100 flex items-center">
+    <h2 className="text-lg font-medium text-foreground flex items-center">
       <SparklesIcon size={16} className="text-indigo-600 dark:text-indigo-400 mr-2" />
       Configuration
     </h2>
@@ -86,7 +86,7 @@ const MobileToolsPanel = ({ isOpen, onClose }: MobileToolsPanelProps) =>
     <div className="fixed inset-0 z-50 flex justify-end bg-black bg-opacity-30 backdrop-blur-sm md:hidden">
       <div className="w-[85%] bg-white dark:bg-gray-900 h-full shadow-lg animate-slide-left">
         <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-          <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100 flex items-center">
+          <h2 className="text-lg font-medium text-foreground flex items-center">
             <SparklesIcon size={16} className="text-indigo-600 dark:text-indigo-400 mr-2" />
             Configuration
           </h2>
@@ -94,7 +94,7 @@ const MobileToolsPanel = ({ isOpen, onClose }: MobileToolsPanelProps) =>
             className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             onClick={onClose}
           >
-            <X size={20} className="text-gray-800 dark:text-gray-200" />
+            <X size={20} className="text-foreground" />
           </button>
         </div>
         <ContextPanel /> {/* Corrected: Use ContextPanel */}
@@ -107,7 +107,7 @@ const AssistantPlaceholder = () => (
   <div className="flex flex-col h-full">
     {/* Placeholder for Assistant content */}
     <div className="flex-1 p-4">
-      <p className="text-center text-gray-500 dark:text-gray-400">Assistant UI will be here.</p>
+      <p className="text-center text-muted-foreground">Assistant UI will be here.</p>
     </div>
   </div>
 );
