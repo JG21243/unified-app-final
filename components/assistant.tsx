@@ -4,7 +4,11 @@ import Chat from "./chat";
 import useConversationStore from "@/stores/useConversationStore";
 import { Item, processMessages } from "@/lib/assistant";
 
-export default function Assistant() {
+interface AssistantProps {
+  initialInputMessage?: string
+}
+
+export default function Assistant({ initialInputMessage }: AssistantProps) {
   const { chatMessages, addConversationItem, addChatMessage } =
     useConversationStore();
   const [isLoading, setIsLoading] = useState(false);
@@ -37,10 +41,11 @@ export default function Assistant() {
   return (
     <div className="h-full w-full bg-white flex justify-center">
       <div className="w-full max-w-4xl">
-        <Chat 
-          items={chatMessages} 
-          onSendMessage={handleSendMessage} 
+        <Chat
+          items={chatMessages}
+          onSendMessage={handleSendMessage}
           isLoading={isLoading}
+          initialInputMessage={initialInputMessage}
         />
       </div>
     </div>

@@ -11,11 +11,12 @@ interface ChatProps {
   items: Item[];
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
+  initialInputMessage?: string;
 }
 
-const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false }) => {
+const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, initialInputMessage = "" }) => {
   const itemsEndRef = useRef<HTMLDivElement>(null);
-  const [inputMessageText, setinputMessageText] = useState<string>("");
+  const [inputMessageText, setinputMessageText] = useState<string>(initialInputMessage);
   // This state is used to provide better user experience for non-English IMEs such as Japanese
   const [isComposing, setIsComposing] = useState(false);
 
