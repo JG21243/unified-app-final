@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { getPrompts, type LegalPrompt } from "@/app/actions"
+import { useState } from "react"
+import { type LegalPrompt } from "@/app/actions"
+import { usePrompts } from "@/hooks/use-prompts"
 import { Combobox } from "@/components/ui/combobox"
 import {
   Select,
@@ -15,15 +16,11 @@ import { Label } from "@/components/ui/label"
 import { useFavorites } from "@/components/favorites-provider"
 
 export function ChatPromptSelector() {
-  const [prompts, setPrompts] = useState<LegalPrompt[]>([])
+  const { prompts } = usePrompts()
   const [category, setCategory] = useState<string>("all")
   const [selectedPrompt, setSelectedPrompt] = useState<string>("")
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const { isFavorite } = useFavorites()
-
-  useEffect(() => {
-    getPrompts().then(({ prompts }) => setPrompts(prompts))
-  }, [])
 
   const categories = Array.from(
     new Set(prompts.map((p) => p.category).filter(Boolean)),
