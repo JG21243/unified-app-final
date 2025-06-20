@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Bot, SparklesIcon, Github, BookOpen, Menu, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import ContextPanel from "@/components/tools-panel" // Corrected: ToolsPanel is default export named ContextPanel
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Assistant from "@/components/assistant" // Added import for Assistant
 
 // Header component for the app
@@ -102,19 +102,18 @@ const MobileToolsPanel = ({ isOpen, onClose }: MobileToolsPanelProps) =>
     </div>
   ) : null
 
-// Placeholder Assistant component
-const AssistantPlaceholder = () => (
-  <div className="flex flex-col h-full">
-    {/* Placeholder for Assistant content */}
-    <div className="flex-1 p-4">
-      <p className="text-center text-muted-foreground">Assistant UI will be here.</p>
-    </div>
-  </div>
-);
 
 // Main component
 export default function ChatPage() {
   const [isToolsPanelOpen, setIsToolsPanelOpen] = useState(false)
+  const [prompts, setPrompts] = useState<{ id: number; name: string; prompt: string }[]>([])
+
+  useEffect(() => {
+    fetch('/api/prompts')
+      .then(res => res.json())
+      .then(data => setPrompts(data.prompts || []))
+      .catch(err => console.error('Failed to load prompts', err))
+  }, [])
 
   return (
     <div className="flex flex-col justify-center min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -123,7 +122,7 @@ export default function ChatPage() {
       {/* Main Content */}
       <div className="flex flex-1 w-full max-w-7xl mx-auto shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg my-4 overflow-hidden">
         <div className="w-full md:w-[70%] border-r border-gray-100 dark:border-gray-800">
-          <AssistantPlaceholder />
+          <Assistant prompts={prompts} />
         </div>
         <div className="hidden md:block w-[30%] bg-white dark:bg-gray-900">
           <ConfigPanelHeader />

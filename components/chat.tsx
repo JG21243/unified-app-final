@@ -6,16 +6,28 @@ import Message from "./message";
 import Annotations from "./annotations";
 import { Item } from "@/lib/assistant";
 import { Bot, Loader, Send, Sparkles } from "lucide-react";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandItem,
+  CommandEmpty,
+} from "@/components/ui/command";
 
 interface ChatProps {
   items: Item[];
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
+  prompts: { id: number; prompt: string; name: string }[];
+  onSelectPrompt: (prompt: { id: number; prompt: string }) => void;
 }
 
-const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false }) => {
+const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, prompts, onSelectPrompt }) => {
   const itemsEndRef = useRef<HTMLDivElement>(null);
   const [inputMessageText, setinputMessageText] = useState<string>("");
+  const [selectedPromptId, setSelectedPromptId] = useState<number | null>(null);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [pickerQuery, setPickerQuery] = useState("");
   // This state is used to provide better user experience for non-English IMEs such as Japanese
   const [isComposing, setIsComposing] = useState(false);
 
@@ -23,13 +35,34 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false }) 
     itemsEndRef.current?.scrollIntoView({ behavior: "instant" });
   };
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" && !event.shiftKey && !isComposing) {
-      event.preventDefault();
-      onSendMessage(inputMessageText);
-      setinputMessageText("");
-    }
-  }, [onSendMessage, inputMessageText, isComposing]);
+  // Open prompt picker with Ctrl/Cmd + K
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsPickerOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (event.key === "Enter" && !event.shiftKey && !isComposing) {
+        event.preventDefault();
+        onSendMessage(inputMessageText);
+        if (selectedPromptId !== null) {
+          onSelectPrompt({ id: selectedPromptId, prompt: inputMessageText });
+        } else {
+          onSelectPrompt({ id: -1, prompt: inputMessageText });
+        }
+        setSelectedPromptId(null);
+        setinputMessageText("");
+      }
+    },
+    [onSendMessage, inputMessageText, isComposing, selectedPromptId, onSelectPrompt]
+  );
 
   useEffect(() => {
     scrollToBottom();
@@ -125,6 +158,12 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false }) 
                 onClick={() => {
                   if (inputMessageText.trim()) {
                     onSendMessage(inputMessageText);
+                    if (selectedPromptId !== null) {
+                      onSelectPrompt({ id: selectedPromptId, prompt: inputMessageText });
+                    } else {
+                      onSelectPrompt({ id: -1, prompt: inputMessageText });
+                    }
+                    setSelectedPromptId(null);
                     setinputMessageText("");
                     // Reset textarea height
                     const textarea = document.getElementById('prompt-textarea');
@@ -142,8 +181,58 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false }) 
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
               Press Enter to send, Shift+Enter for a new line
             </p>
+            {isPickerOpen && (
+              <CommandDialog open={isPickerOpen} onOpenChange={setIsPickerOpen}>
+                <CommandInput
+                  value={pickerQuery}
+                  onValueChange={setPickerQuery}
+                  placeholder="Search prompts..."
+                />
+                <CommandList>
+                  {prompts.filter((p) => p.name.toLowerCase().includes(pickerQuery.toLowerCase())).map((p) => (
+                    <CommandItem
+                      key={p.id}
+                      onSelect={() => {
+                        setinputMessageText(p.prompt);
+                        setSelectedPromptId(p.id);
+                        setIsPickerOpen(false);
+                        setPickerQuery("");
+                      }}
+                    >
+                      {p.name}
+                    </CommandItem>
+                  ))}
+                  {prompts.filter((p) => p.name.toLowerCase().includes(pickerQuery.toLowerCase())).length === 0 && <CommandEmpty>No prompts found.</CommandEmpty>}
+                </CommandList>
+              </CommandDialog>
+            )}
+            {inputMessageText.startsWith("/prompt") && (
+              <div className="absolute bottom-14 left-0 right-0 bg-popover border rounded-md shadow-md max-h-40 overflow-y-auto z-10">
+                {prompts
+                  .filter((p) => p.name.toLowerCase().includes(inputMessageText.slice(7).trim().toLowerCase()))
+                  .slice(0, 3)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
+                      onClick={() => {
+                        setinputMessageText(p.prompt);
+                        setSelectedPromptId(p.id);
+                      }}
+                    >
+                      {p.name}
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         </div>
+        <button
+          className="md:hidden fixed bottom-20 right-4 bg-primary text-white p-3 rounded-full shadow-lg"
+          onClick={() => setIsPickerOpen(true)}
+        >
+          Prompts
+        </button>
       </div>
     </div>
   );

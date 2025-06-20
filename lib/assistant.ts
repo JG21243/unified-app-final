@@ -18,6 +18,7 @@ export interface MessageItem {
   role: "user" | "assistant" | "system";
   id?: string;
   content: ContentItem[];
+  promptId?: number;
 }
 
 // Custom items to display in chat
@@ -115,10 +116,13 @@ export const processMessages = async () => {
     ...conversationItems,
   ];
 
+  // Remove the promptId property before sending to the API
+  const messagesForModel = allConversationItems.map(({ promptId, ...rest }) => rest);
+
   let assistantMessageContent = "";
   let functionArguments = "";
 
-  await handleTurn(allConversationItems, tools, async ({ event, data }) => {
+  await handleTurn(messagesForModel, tools, async ({ event, data }) => {
     switch (event) {
       case "response.output_text.delta":
       case "response.output_text.annotation.added": {

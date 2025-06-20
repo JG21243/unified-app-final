@@ -8,11 +8,14 @@ interface ConversationState {
   chatMessages: Item[];
   // Items sent to the Responses API
   conversationItems: any[];
+  // ID of the last prompt inserted into the chat box
+  lastUsedPromptId: number | null;
 
   setChatMessages: (items: Item[]) => void;
   setConversationItems: (messages: any[]) => void;
   addChatMessage: (item: Item) => void;
   addConversationItem: (message: ChatCompletionMessageParam) => void;
+  setLastUsedPromptId: (id: number | null) => void;
   rawSet: (state: any) => void;
 }
 
@@ -25,6 +28,7 @@ const useConversationStore = create<ConversationState>((set) => ({
     },
   ],
   conversationItems: [],
+  lastUsedPromptId: null,
   setChatMessages: (items) => set({ chatMessages: items }),
   setConversationItems: (messages) => set({ conversationItems: messages }),
   addChatMessage: (item) =>
@@ -33,6 +37,7 @@ const useConversationStore = create<ConversationState>((set) => ({
     set((state) => ({
       conversationItems: [...state.conversationItems, message],
     })),
+  setLastUsedPromptId: (id) => set({ lastUsedPromptId: id }),
   rawSet: set,
 }));
 

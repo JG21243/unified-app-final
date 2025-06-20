@@ -21,6 +21,7 @@ This project combines the features of a general AI assistant starter app with fu
 - **Streaming Responses** - Real-time streaming of AI responses
 - **Rich Content Display** - Support for markdown, code highlighting, and annotations
 - **Mobile-Friendly Design** - Optimized experience across all devices
+- **Prompt Picker** - Insert saved prompts into chat with **Ctrl/⌘ + K**
 
 ## 🚀 Technologies
 
