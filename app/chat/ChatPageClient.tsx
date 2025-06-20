@@ -3,9 +3,9 @@
 import { PageHeader } from "@/components/layout/page-header"
 import { Bot, SparklesIcon, Github, BookOpen, Menu, X, ListTodo } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
-import ContextPanel from "@/components/tools-panel" // Corrected: ToolsPanel is default export named ContextPanel
+import ContextPanel from "@/components/tools-panel"
 import { useState, useEffect } from "react"
-import Assistant from "@/components/assistant" // Added import for Assistant
+import Assistant from "@/components/assistant"
 import ChatPromptSelector from "@/components/chat-prompt-selector"
 import PromptPicker from "@/components/prompt-picker"
 
@@ -98,7 +98,7 @@ const MobileToolsPanel = ({ isOpen, onClose }: MobileToolsPanelProps) =>
             <X size={20} className="text-foreground" />
           </button>
         </div>
-        <ContextPanel /> {/* Corrected: Use ContextPanel */}
+        <ContextPanel />
       </div>
     </div>
   ) : null
