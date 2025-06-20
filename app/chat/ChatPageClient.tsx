@@ -1,13 +1,13 @@
 "use client"
 
-import { PageContainer } from "@/components/layout/page-container"
 import { PageHeader } from "@/components/layout/page-header"
-import { Bot, SparklesIcon, Github, BookOpen, Menu, X } from "lucide-react"
+import { Bot, SparklesIcon, Github, BookOpen, Menu, X, ListTodo } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import ContextPanel from "@/components/tools-panel" // Corrected: ToolsPanel is default export named ContextPanel
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Assistant from "@/components/assistant" // Added import for Assistant
 import ChatPromptSelector from "@/components/chat-prompt-selector"
+import PromptPicker from "@/components/prompt-picker"
 
 // Header component for the app
 const AppHeader = () => (
@@ -111,6 +111,18 @@ interface ChatPageClientProps {
 
 export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
   const [isToolsPanelOpen, setIsToolsPanelOpen] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  useEffect(() => {
+    const handle = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault()
+        setPickerOpen(true)
+      }
+    }
+    window.addEventListener("keydown", handle)
+    return () => window.removeEventListener("keydown", handle)
+  }, [])
 
   return (
     <div className="flex flex-col justify-center min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -121,14 +133,22 @@ export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
         <div className="w-full md:w-[70%] border-r border-gray-100 dark:border-gray-800 flex flex-col">
           <ChatPromptSelector />
           <Assistant initialInputMessage={initialPrompt} />
+          <PromptPicker open={pickerOpen} onOpenChange={setPickerOpen} />
         </div>
         <div className="hidden md:block w-[30%] bg-white dark:bg-gray-900">
           <ConfigPanelHeader />
           <ContextPanel />
         </div>
 
-        {/* Mobile menu button */}
-        <div className="fixed bottom-4 right-4 md:hidden z-40">
+        {/* Mobile actions */}
+        <div className="fixed bottom-4 right-4 md:hidden z-40 flex gap-2">
+          <button
+            onClick={() => setPickerOpen(true)}
+            className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-3 rounded-full shadow-lg hover:opacity-90 transition-all"
+            aria-label="Open prompts"
+          >
+            <ListTodo size={20} />
+          </button>
           <button
             onClick={() => setIsToolsPanelOpen(true)}
             className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-3 rounded-full shadow-lg hover:opacity-90 transition-all"
