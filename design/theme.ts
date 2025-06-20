@@ -1,40 +1,8 @@
-export const colors = {
-  primary: {
-    DEFAULT: 'hsl(210 40% 50%)', // Example blue
-    foreground: 'hsl(0 0% 100%)', // White
-    muted: 'hsl(210 40% 95%)', // Light blue
-  },
-  secondary: {
-    DEFAULT: 'hsl(240 5% 50%)', // Gray
-    foreground: 'hsl(0 0% 100%)', // White
-  },
-  accent: { // Added accent color
-    DEFAULT: 'hsl(240 5% 96%)', // Light Gray
-    foreground: 'hsl(240 10% 10%)', // Dark Gray
-  },
-  // ... other colors like destructive, background, foreground, etc.
-  // Match the names used in tailwind.config.ts (e.g., border, input, ring)
-  border: 'hsl(240 5% 85%)',
-  input: 'hsl(240 5% 75%)',
-  ring: 'hsl(210 40% 60%)',
-  background: 'hsl(0 0% 100%)',
-  foreground: 'hsl(240 10% 10%)',
-};
+import { lightColors, spacing as baseSpacing } from './tokens';
 
-export const spacing = {
-  xxs: '0.375rem', // 6px (Added for space-y-1.5)
-  xs: '0.25rem', // 4px
-  sm: '0.5rem',  // 8px
-  base: '0.75rem', // 12px
-  md: '1rem',    // 16px
-  lg: '1.5rem',  // 24px
-  xl: '2rem',    // 32px
-  '2xl': '2.25rem', // 36px (Updated for h-9)
-  '3xl': '2.5rem', // 40px (Renamed from 2xl)
-  '4xl': '3rem',    // 48px (Added for consistency)
-  '5xl': '5rem',    // 80px (Added for Textarea min-height)
-  // ... add more as needed
-};
+export const colors = lightColors;
+
+export const spacing = baseSpacing;
 
 export const borderRadius = {
   sm: '0.25rem',
