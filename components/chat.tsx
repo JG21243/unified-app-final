@@ -6,6 +6,8 @@ import Message from "./message";
 import Annotations from "./annotations";
 import { Item } from "@/lib/assistant";
 import { Bot, Loader, Send, Sparkles } from "lucide-react";
+import { usePrompts } from "@/hooks/use-prompts";
+import useConversationStore from "@/stores/useConversationStore";
 
 interface ChatProps {
   items: Item[];
@@ -19,6 +21,10 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
   const [inputMessageText, setinputMessageText] = useState<string>(initialInputMessage);
   // This state is used to provide better user experience for non-English IMEs such as Japanese
   const [isComposing, setIsComposing] = useState(false);
+  const { prompts } = usePrompts();
+  const { setCurrentPromptId, addUsedPromptId, currentPromptId } = useConversationStore();
+  const [suggestions, setSuggestions] = useState<typeof prompts>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const scrollToBottom = () => {
     itemsEndRef.current?.scrollIntoView({ behavior: "instant" });
@@ -31,6 +37,20 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
       setinputMessageText("");
     }
   }, [onSendMessage, inputMessageText, isComposing]);
+
+  useEffect(() => {
+    const match = inputMessageText.match(/^\/prompt\s*(.*)/i);
+    if (match) {
+      const q = match[1] || "";
+      const filtered = prompts.filter((p) =>
+        p.name.toLowerCase().includes(q.toLowerCase()),
+      );
+      setSuggestions(filtered.slice(0, 5));
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [inputMessageText, prompts]);
 
   useEffect(() => {
     scrollToBottom();
@@ -115,6 +135,30 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
                 onCompositionEnd={() => setIsComposing(false)}
                 disabled={isLoading}
               />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute bottom-12 left-0 w-full bg-popover border rounded-md shadow-md max-h-40 overflow-y-auto z-50">
+                  {suggestions.map((p) => (
+                    <button
+                      key={p.id}
+                      className="block w-full text-left px-3 py-1 hover:bg-muted"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        const textarea = document.getElementById('prompt-textarea') as HTMLTextAreaElement | null;
+                        if (textarea) {
+                          const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+                          setter?.call(textarea, p.prompt);
+                          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                          textarea.focus();
+                        }
+                        setCurrentPromptId(p.id);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              )}
               <button
                 disabled={!inputMessageText || isLoading}
                 data-testid="send-button"
@@ -126,6 +170,10 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
                 onClick={() => {
                   if (inputMessageText.trim()) {
                     onSendMessage(inputMessageText);
+                    if (currentPromptId !== null) {
+                      addUsedPromptId(currentPromptId);
+                      setCurrentPromptId(null);
+                    }
                     setinputMessageText("");
                     // Reset textarea height
                     const textarea = document.getElementById('prompt-textarea');
