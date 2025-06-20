@@ -81,7 +81,7 @@ async function PromptDataView({ promptId }: { promptId: number }) {
                   Edit
                 </Button>
               </Link>
-              <Link href="/chat" passHref>
+              <Link href={`/chat?promptId=${promptId}`} passHref>
                 <Button variant="outline">
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Test in Chat

@@ -21,6 +21,7 @@ This project combines the features of a general AI assistant starter app with fu
 - **Streaming Responses** - Real-time streaming of AI responses
 - **Rich Content Display** - Support for markdown, code highlighting, and annotations
 - **Mobile-Friendly Design** - Optimized experience across all devices
+- **Prompt to Chat** - Test a saved prompt in the chat interface with one click
 
 ## 🚀 Technologies
 
@@ -152,6 +153,8 @@ The application includes several pre-built AI functions:
 ### Legal Prompt Management
 
 This feature, originating from the "legal-prompts-app" integration, allows for managing and utilizing a curated list of prompts. While initially designed for legal applications, it can be adapted for various specialized domains requiring predefined prompt templates. The `app/components/legal-prompts-list.tsx` component renders these prompts, with data likely sourced from `scripts/prompts-data.json`.
+
+You can quickly test any saved prompt by clicking the **Test in Chat** button on its detail page. This opens the chat page with the prompt pre-filled in the input field.
 
 ### Responsive Design
 
