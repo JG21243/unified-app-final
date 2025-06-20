@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Search, FileText, Tag, BarChart2, Keyboard } from "lucide-react"
+import { Plus, Search, FileText, Tag, BarChart2, Bot, Keyboard } from "lucide-react"
 
 import {
   CommandDialog,
@@ -67,6 +67,10 @@ export function CommandMenu() {
             <CommandItem onSelect={() => runCommand(() => router.push("/?tab=dashboard"))}>
               <BarChart2 className="mr-2 h-4 w-4" />
               <span>Dashboard</span>
+            </CommandItem>
+            <CommandItem onSelect={() => runCommand(() => router.push("/chat"))}>
+              <Bot className="mr-2 h-4 w-4" />
+              <span>Chat</span>
             </CommandItem>
             <CommandItem onSelect={() => runCommand(() => router.push("/categories"))}>
               <Tag className="mr-2 h-4 w-4" />
