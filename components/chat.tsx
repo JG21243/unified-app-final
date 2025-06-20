@@ -8,14 +8,23 @@ import { Item } from "@/lib/assistant";
 import { Bot, Loader, Send, Sparkles } from "lucide-react";
 
 interface ChatProps {
-  items: Item[];
-  onSendMessage: (message: string) => void;
-  isLoading?: boolean;
+  items: Item[]
+  onSendMessage: (message: string) => void
+  isLoading?: boolean
+  prefill?: string
+  renderAboveInput?: React.ReactNode
 }
 
-const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false }) => {
-  const itemsEndRef = useRef<HTMLDivElement>(null);
-  const [inputMessageText, setinputMessageText] = useState<string>("");
+const Chat: React.FC<ChatProps> = ({
+  items,
+  onSendMessage,
+  isLoading = false,
+  prefill = "",
+  renderAboveInput,
+}) => {
+  const itemsEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [inputMessageText, setinputMessageText] = useState<string>(prefill)
   // This state is used to provide better user experience for non-English IMEs such as Japanese
   const [isComposing, setIsComposing] = useState(false);
 
@@ -34,6 +43,17 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false }) 
   useEffect(() => {
     scrollToBottom();
   }, [items]);
+
+  useEffect(() => {
+    if (prefill) {
+      setinputMessageText(prefill)
+      if (textareaRef.current) {
+        const ta = textareaRef.current
+        ta.style.height = 'auto'
+        ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`
+      }
+    }
+  }, [prefill])
 
   return (
     <div className="flex justify-center items-center size-full">
@@ -93,10 +113,12 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false }) 
         </div>
         
         <div className="sticky bottom-0 p-4 md:px-6">
+          {renderAboveInput}
           <div className="relative">
             <div className="flex w-full items-end overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md focus-within:border-indigo-300 dark:focus-within:border-indigo-700 focus-within:ring-2 focus-within:ring-indigo-300 dark:focus-within:ring-indigo-700 transition-all">
               <textarea
                 id="prompt-textarea"
+                ref={textareaRef}
                 tabIndex={0}
                 dir="auto"
                 rows={1}

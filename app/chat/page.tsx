@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle"
 import ContextPanel from "@/components/tools-panel" // Corrected: ToolsPanel is default export named ContextPanel
 import { useState } from "react"
 import Assistant from "@/components/assistant" // Added import for Assistant
+import ChatPromptSelector from "@/components/chat-prompt-selector"
 
 // Header component for the app
 const AppHeader = () => (
@@ -101,20 +102,10 @@ const MobileToolsPanel = ({ isOpen, onClose }: MobileToolsPanelProps) =>
       </div>
     </div>
   ) : null
-
-// Placeholder Assistant component
-const AssistantPlaceholder = () => (
-  <div className="flex flex-col h-full">
-    {/* Placeholder for Assistant content */}
-    <div className="flex-1 p-4">
-      <p className="text-center text-muted-foreground">Assistant UI will be here.</p>
-    </div>
-  </div>
-);
-
 // Main component
 export default function ChatPage() {
   const [isToolsPanelOpen, setIsToolsPanelOpen] = useState(false)
+  const [selectedPrompt, setSelectedPrompt] = useState("")
 
   return (
     <div className="flex flex-col justify-center min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -123,7 +114,10 @@ export default function ChatPage() {
       {/* Main Content */}
       <div className="flex flex-1 w-full max-w-7xl mx-auto shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg my-4 overflow-hidden">
         <div className="w-full md:w-[70%] border-r border-gray-100 dark:border-gray-800">
-          <AssistantPlaceholder />
+          <Assistant
+            prefill={selectedPrompt}
+            renderAboveInput={<ChatPromptSelector onSelect={setSelectedPrompt} />}
+          />
         </div>
         <div className="hidden md:block w-[30%] bg-white dark:bg-gray-900">
           <ConfigPanelHeader />
