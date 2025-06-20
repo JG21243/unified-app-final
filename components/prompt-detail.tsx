@@ -121,7 +121,7 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
             aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
           >
             {isFavorited ? (
-              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <Star className="h-5 w-5 fill-primary text-primary" />
             ) : (
               <StarOff className="h-5 w-5" />
             )}

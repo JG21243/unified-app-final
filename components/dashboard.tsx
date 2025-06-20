@@ -62,7 +62,14 @@ export function Dashboard() {
   ]
 
   // Colors for pie chart
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"]
+  const COLORS = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+    "hsl(var(--primary))",
+  ]
 
   // Enhance dashboard responsiveness
   return (
@@ -119,7 +126,7 @@ export function Dashboard() {
                       <XAxis type="number" />
                       <YAxis type="category" dataKey="name" width={100} />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#8884d8" />
+                      <Bar dataKey="value" fill="hsl(var(--primary))" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -148,7 +155,7 @@ export function Dashboard() {
                       cy="50%"
                       labelLine={false}
                       outerRadius={80}
-                      fill="#8884d8"
+                      fill="hsl(var(--primary))"
                       dataKey="value"
                       nameKey="name"
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}

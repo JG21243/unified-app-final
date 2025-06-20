@@ -57,7 +57,14 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
   const [error, setError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">("30d")
 
-  const COLORS = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
+  const COLORS = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+    "hsl(var(--primary))",
+  ]
 
   useEffect(() => {
     const loadAnalytics = async () => {
@@ -217,7 +224,7 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
                       <Line
                         type="monotone"
                         dataKey="count"
-                        stroke="#4f46e5"
+                        stroke="hsl(var(--primary))"
                         strokeWidth={2}
                         activeDot={{ r: 8 }}
                         name="Usage Count"
@@ -243,7 +250,7 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
                       <XAxis dataKey="hour" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#4f46e5" name="Usage Count" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" fill="hsl(var(--primary))" name="Usage Count" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -263,7 +270,7 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
                       <XAxis dataKey="day" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#0ea5e9" name="Usage Count" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" fill="hsl(var(--chart-2))" name="Usage Count" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -288,7 +295,7 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
                           cy="50%"
                           labelLine={false}
                           outerRadius={80}
-                          fill="#8884d8"
+                          fill="hsl(var(--primary))"
                           dataKey="count"
                           nameKey="variable"
                           label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}

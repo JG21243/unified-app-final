@@ -109,7 +109,14 @@ export function DashboardStats() {
   }))
 
   // Colors for pie chart
-  const COLORS = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
+  const COLORS = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+    "hsl(var(--primary))",
+  ]
 
   // Sample data for line chart
   const usageData = [
@@ -143,10 +150,10 @@ export function DashboardStats() {
           </CardContent>
         </Card>
 
-        <Card className="transition-all hover:shadow-md border-l-4 border-l-blue-500">
+        <Card className="transition-all hover:shadow-md border-l-4 border-l-primary">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-500" />
+              <Clock className="h-4 w-4 text-primary" />
               Recently Created
             </CardTitle>
             <CardDescription>Last 7 days</CardDescription>
@@ -156,10 +163,10 @@ export function DashboardStats() {
           </CardContent>
         </Card>
 
-        <Card className="transition-all hover:shadow-md border-l-4 border-l-green-500">
+        <Card className="transition-all hover:shadow-md border-l-4 border-l-primary">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Tag className="h-4 w-4 text-green-500" />
+              <Tag className="h-4 w-4 text-primary" />
               Categories
             </CardTitle>
             <CardDescription>Total categories</CardDescription>
@@ -169,10 +176,10 @@ export function DashboardStats() {
           </CardContent>
         </Card>
 
-        <Card className="transition-all hover:shadow-md border-l-4 border-l-amber-500">
+        <Card className="transition-all hover:shadow-md border-l-4 border-l-primary">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-500" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               Most Used
             </CardTitle>
             <CardDescription>Top prompt usage</CardDescription>
@@ -217,11 +224,11 @@ export function DashboardStats() {
                       <Tooltip
                         contentStyle={{
                           borderRadius: "8px",
-                          border: "1px solid #e2e8f0",
+                          border: "1px solid hsl(var(--border))",
                           boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                         }}
                       />
-                      <Bar dataKey="value" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={20} />
+                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={20} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -250,7 +257,7 @@ export function DashboardStats() {
                       labelLine={false}
                       outerRadius={120}
                       innerRadius={60}
-                      fill="#8884d8"
+                      fill="hsl(var(--primary))"
                       dataKey="value"
                       nameKey="name"
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
@@ -262,7 +269,7 @@ export function DashboardStats() {
                     <Tooltip
                       contentStyle={{
                         borderRadius: "8px",
-                        border: "1px solid #e2e8f0",
+                        border: "1px solid hsl(var(--border))",
                         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                       }}
                     />
@@ -282,18 +289,18 @@ export function DashboardStats() {
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={usageData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip
                       contentStyle={{
                         borderRadius: "8px",
-                        border: "1px solid #e2e8f0",
+                        border: "1px solid hsl(var(--border))",
                         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                       }}
                     />
                     <Legend />
-                    <Line type="monotone" dataKey="usage" stroke="#4f46e5" strokeWidth={2} activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="usage" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>

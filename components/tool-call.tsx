@@ -46,7 +46,7 @@ function ApiCallCell({ toolCall }: ToolCallProps) {
                     marginTop: 0,
                     marginBottom: 8,
                     fontSize: "12px",
-                    backgroundColor: "#1e1e1e", // Dark background regardless of mode
+                    backgroundColor: "hsl(var(--background))", // Dark background regardless of mode
                     border: "1px solid rgba(82, 82, 89, 0.32)"
                   }}
                   language="json"
@@ -68,7 +68,7 @@ function ApiCallCell({ toolCall }: ToolCallProps) {
                       marginTop: 0,
                       marginBottom: 0,
                       fontSize: "12px",
-                      backgroundColor: "#1e1e1e", // Dark background regardless of mode
+                      backgroundColor: "hsl(var(--background))", // Dark background regardless of mode
                       border: "1px solid rgba(82, 82, 89, 0.32)"
                     }}
                     language="json"
