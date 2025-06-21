@@ -128,7 +128,7 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
                 dir="auto"
                 rows={1}
                 placeholder="Message Gemini..."
-                className="min-h-[48px] max-h-[200px] w-full resize-none border-0 bg-transparent px-4 py-3 text-sm focus:outline-none text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="min-h-[48px] max-h-[200px] w-full resize-none border-0 bg-transparent px-4 py-3 text-sm focus:outline-none text-gray-800 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 value={inputMessageText}
                 onChange={(e) => {
                   setinputMessageText(e.target.value);
