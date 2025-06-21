@@ -130,12 +130,12 @@ export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
 
       {/* Main Content */}
       <div className="flex flex-1 w-full max-w-7xl mx-auto shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg my-4 overflow-hidden">
-        <div className="w-full md:w-[70%] border-r border-gray-100 dark:border-gray-800 flex flex-col">
+        <div className="w-full md:w-2/3 border-r border-gray-100 dark:border-gray-800 flex flex-col px-4 md:px-6">
           <ChatPromptSelector />
           <Assistant initialInputMessage={initialPrompt} />
           <PromptPicker open={pickerOpen} onOpenChange={setPickerOpen} />
         </div>
-        <div className="hidden md:block w-[30%] bg-white dark:bg-gray-900">
+        <div className="hidden md:block w-full md:w-1/3 bg-white dark:bg-gray-900 px-4 md:px-6">
           <ConfigPanelHeader />
           <ContextPanel />
         </div>

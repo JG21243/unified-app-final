@@ -50,7 +50,7 @@ export function ChatPromptSelector() {
   }
 
   return (
-    <div className="p-4 border-b border-gray-200 dark:border-gray-800 space-y-2">
+    <div className="sticky top-0 z-10 bg-background/95 backdrop-blur p-4 border-b border-gray-200 dark:border-gray-800 space-y-2">
       <div className="flex flex-wrap items-center gap-2">
         <Combobox
           options={filteredPrompts.map((p) => ({
