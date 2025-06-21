@@ -22,6 +22,7 @@ This project combines the features of a general AI assistant starter app with fu
 - **Rich Content Display** - Support for markdown, code highlighting, and annotations
 - **Mobile-Friendly Design** - Optimized experience across all devices
 - **Prompt to Chat** - Test a saved prompt in the chat interface with one click
+- **Prompt Picker** - Press **Ctrl/⌘ + K** (or tap Prompts on mobile) to insert a saved prompt
 
 ## 🚀 Technologies
 
