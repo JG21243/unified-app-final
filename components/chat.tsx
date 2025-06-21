@@ -17,8 +17,8 @@ interface ChatProps {
 }
 
 const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, initialInputMessage = "" }) => {
-  const itemsEndRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const itemsEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputMessageText, setinputMessageText] = useState<string>(initialInputMessage);
   // This state is used to provide better user experience for non-English IMEs such as Japanese
   const [isComposing, setIsComposing] = useState(false);
@@ -58,8 +58,8 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
   }, [items]);
 
   useEffect(() => {
-    textareaRef.current?.focus()
-  }, [])
+    textareaRef.current?.focus();
+  }, []);
 
   return (
     <div className="flex justify-center items-center size-full">
