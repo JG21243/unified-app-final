@@ -18,6 +18,7 @@ interface ChatProps {
 
 const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, initialInputMessage = "" }) => {
   const itemsEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputMessageText, setinputMessageText] = useState<string>(initialInputMessage);
   // This state is used to provide better user experience for non-English IMEs such as Japanese
   const [isComposing, setIsComposing] = useState(false);
@@ -56,10 +57,14 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
     scrollToBottom();
   }, [items]);
 
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
+
   return (
     <div className="flex justify-center items-center size-full">
       <div className="flex grow flex-col h-full max-w-[750px] gap-2">
-        <div className="h-[calc(90vh-100px)] overflow-y-scroll px-4 md:px-6 flex flex-col scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 flex flex-col scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
           <div className="mt-auto space-y-2 py-4">
             {items.length === 0 && (
               <div className="flex flex-col items-center justify-center text-center p-8 my-8">
@@ -118,6 +123,7 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
             <div className="flex w-full items-end overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md focus-within:border-indigo-300 dark:focus-within:border-indigo-700 focus-within:ring-2 focus-within:ring-indigo-300 dark:focus-within:ring-indigo-700 transition-all">
               <textarea
                 id="prompt-textarea"
+                ref={textareaRef}
                 tabIndex={0}
                 dir="auto"
                 rows={1}
