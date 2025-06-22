@@ -217,7 +217,7 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={analytics.usageOverTime} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="date" />
                       <YAxis />
                       <Tooltip />
@@ -246,7 +246,7 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={analytics.usageByTime} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="hour" />
                       <YAxis />
                       <Tooltip />
@@ -266,7 +266,7 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={analytics.usageByDay} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="day" />
                       <YAxis />
                       <Tooltip />
