@@ -127,7 +127,7 @@ export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
         {!isConfigPanelOpen && (
           <button
             onClick={() => setIsConfigPanelOpen(true)}
-            className="hidden md:flex absolute top-4 right-4 z-40 bg-white dark:bg-gray-900 p-1.5 rounded-full shadow"
+            className="hidden md:flex fixed top-1/2 right-0 -translate-y-1/2 z-40 bg-white dark:bg-gray-900 p-2 rounded-l-full shadow"
             aria-label="Open settings"
             aria-expanded="false"
             aria-controls="desktop-config-panel"
