@@ -42,13 +42,7 @@ interface MobileToolsPanelProps {
 const MobileToolsPanel = ({ isOpen, onClose }: MobileToolsPanelProps) =>
   isOpen ? (
     <div className="fixed inset-0 z-50 flex justify-end bg-black bg-opacity-30 backdrop-blur-sm md:hidden">
-      <div
-        id="mobile-config-panel"
-        className="w-[85%] bg-white dark:bg-gray-900 h-full shadow-lg animate-slide-in-from-right"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="mobile-config-title"
-      >
+      <div className="w-11/12 max-w-sm bg-white dark:bg-gray-900 h-full shadow-lg animate-slide-in-from-right">
         <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
           <h2
             id="mobile-config-title"
