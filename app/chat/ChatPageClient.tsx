@@ -98,7 +98,9 @@ export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
       {/* Main Content */}
       <div className="relative flex flex-1 w-full max-w-7xl mx-auto shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg my-4 overflow-hidden">
         <div
-          className={`w-full ${isConfigPanelOpen ? 'md:w-2/3' : 'md:w-full'} border-r border-gray-100 dark:border-gray-800 flex flex-col px-4 md:px-6`}
+          className={`w-full ${
+            isConfigPanelOpen ? 'md:w-2/3 lg:w-3/4' : 'md:w-full'
+          } border-r border-gray-100 dark:border-gray-800 flex flex-col px-4 md:px-6`}
         >
           <ChatPromptSelector />
           <Assistant initialInputMessage={initialPrompt} />
@@ -108,7 +110,7 @@ export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
           id="desktop-config-panel"
           className={`hidden md:block overflow-hidden bg-white dark:bg-gray-900 transition-[width] duration-300 ${
             isConfigPanelOpen
-              ? 'w-full md:w-1/3 border-l border-gray-100 dark:border-gray-800 px-4 md:px-6'
+              ? 'w-full md:w-1/3 lg:w-1/4 border-l border-gray-100 dark:border-gray-800 px-4 md:px-6'
               : 'w-0 border-0 px-0'
           }`}
           aria-hidden={!isConfigPanelOpen}
