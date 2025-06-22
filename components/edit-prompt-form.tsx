@@ -60,13 +60,19 @@ export function EditPromptForm({ prompt }: EditPromptFormProps) {
     setIsSubmitting(true)
 
     try {
-      await updateLegalPrompt(prompt.id, {
+      const result = await updateLegalPrompt(prompt.id, {
         name: formData.name,
         category: formData.category,
         prompt: formData.prompt,
         systemMessage: formData.systemMessage || null,
         tags: tags,
       })
+
+      console.log("updateLegalPrompt result", result)
+
+      if (!result.success) {
+        throw new Error(result.error?.message || "Update failed")
+      }
 
       toast({
         title: "Success",

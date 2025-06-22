@@ -374,14 +374,16 @@ export async function updateLegalPrompt(
     }
 
     const result = await sql`
-      UPDATE legalprompt 
-      SET name = ${sanitizedData.name}, 
-          prompt = ${sanitizedData.prompt}, 
-          category = ${sanitizedData.category}, 
+      UPDATE legalprompt
+      SET name = ${sanitizedData.name},
+          prompt = ${sanitizedData.prompt},
+          category = ${sanitizedData.category},
           "systemMessage" = ${sanitizedData.systemMessage}
-      WHERE id = ${id} 
+      WHERE id = ${id}
       RETURNING id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
     `
+
+    console.log(`Updated prompt ${id}`, result[0])
     
     const updatedPrompt = result[0]
 
