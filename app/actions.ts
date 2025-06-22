@@ -31,7 +31,9 @@ export type PromptError = {
 export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: string | null }> {
   try {
     // When the database connection isn't configured, fall back to bundled prompt data
-    if (!process.env.DATABASE_URL) {
+    // Access the variable dynamically so its value is read at runtime. Next.js
+    // may inline environment variables if dot notation is used.
+    if (!process.env["DATABASE_URL"]) {
       console.warn("DATABASE_URL is not set. Loading fallback prompts")
       const prompts: LegalPrompt[] = (fallbackPrompts as any[]).map((p, i) => ({
         id: i + 1,

@@ -5,7 +5,11 @@ import * as schema from "./db/schema"
 // Read the database URL from the environment. Some development setups may omit
 // this variable, so we provide a graceful fallback rather than throwing during
 // import which would break server actions.
-const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL
+// Use bracket notation so Next.js doesn't inline the value at build time.
+// This ensures the variable is read at runtime and works in deployed
+// environments like Vercel where the value may differ between build and
+// runtime.
+const DATABASE_URL = process.env["DATABASE_URL"] || process.env["POSTGRES_URL"]
 
 let sql: ReturnType<typeof neon> | ((...args: any[]) => Promise<unknown[]>)
 let db: ReturnType<typeof drizzle> | null
