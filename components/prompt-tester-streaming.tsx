@@ -132,7 +132,7 @@ export function PromptTesterStreaming({ promptId, prompt, systemMessage, variabl
               value={response}
               readOnly
               placeholder="AI response will appear here..."
-              className="min-h-[200px] h-[40vh] sm:h-[300px] resize-y font-mono text-sm"
+              className="min-h-[200px] h-[40vh] sm:h-72 resize-y font-mono text-sm"
             />
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80">
