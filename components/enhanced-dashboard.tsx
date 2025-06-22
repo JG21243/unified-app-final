@@ -281,7 +281,7 @@ export function EnhancedDashboard() {
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={categoryData} margin={{ left: 20, right: 20 }}>
-                              <CartesianGrid strokeDasharray="3 3" />
+                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                               <XAxis dataKey="name" />
                               <YAxis />
                               <Tooltip />
@@ -321,7 +321,7 @@ export function EnhancedDashboard() {
                           </defs>
                           <XAxis dataKey="month" />
                           <YAxis />
-                          <CartesianGrid strokeDasharray="3 3" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                           <Tooltip />
                           <Legend />
                           <Area
@@ -355,7 +355,7 @@ export function EnhancedDashboard() {
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={PROMPT_ACTIVITY} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                           <XAxis dataKey="date" />
                           <YAxis />
                           <Tooltip />

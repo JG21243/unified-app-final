@@ -225,7 +225,7 @@ export function DashboardStats() {
                         contentStyle={{
                           borderRadius: "8px",
                           border: "1px solid hsl(var(--border))",
-                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                          boxShadow: "0 4px 6px -1px hsl(var(--foreground) / 0.1)",
                         }}
                       />
                       <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={20} />
@@ -270,7 +270,7 @@ export function DashboardStats() {
                       contentStyle={{
                         borderRadius: "8px",
                         border: "1px solid hsl(var(--border))",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        boxShadow: "0 4px 6px -1px hsl(var(--foreground) / 0.1)",
                       }}
                     />
                   </PieChart>
@@ -296,7 +296,7 @@ export function DashboardStats() {
                       contentStyle={{
                         borderRadius: "8px",
                         border: "1px solid hsl(var(--border))",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        boxShadow: "0 4px 6px -1px hsl(var(--foreground) / 0.1)",
                       }}
                     />
                     <Legend />
