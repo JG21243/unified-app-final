@@ -8,14 +8,22 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useTags } from "@/components/tags-provider"
 
+interface PromptFilterFields {
+  category?: string[]
+  dateRange?: {
+    from?: string
+    to?: string
+  }
+}
+
 interface PromptFiltersProps {
   selectedCategories: string[]
   onCategoryChange: (categories: string[]) => void
   selectedTags: string[]
   onTagChange: (tags: string[]) => void
   categories: string[]
-  filters: any // TODO: Define type
-  onFilterChange: (filters: any) => void // TODO: Define type
+  filters: PromptFilterFields
+  onFilterChange: (filters: PromptFilterFields) => void
 }
 
 export function PromptFilters({
