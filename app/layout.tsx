@@ -1,5 +1,5 @@
 import type React from "react"
-import { Inter } from "next/font/google"
+import localFont from "next/font/local"
 import "@/styles/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { FavoritesProvider } from "@/components/favorites-provider"
@@ -7,10 +7,15 @@ import { TagsProvider } from "@/components/tags-provider"
 import { GlobalHeader } from "@/components/layout/global-header"
 import { GlobalFooter } from "@/components/layout/global-footer"
 
-// Use variable font with more weights
-const inter = Inter({
-  subsets: ["latin"],
+// Load local Geist fonts
+const geist = localFont({
+  src: "./fonts/GeistVF.woff",
   variable: "--font-sans",
+  display: "swap",
+})
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-mono",
   display: "swap",
 })
 
@@ -22,7 +27,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} antialiased`}>
       <body className="min-h-screen bg-background font-sans">
         <ThemeProvider
           attribute="class"

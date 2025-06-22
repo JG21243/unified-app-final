@@ -30,10 +30,11 @@ This project combines the features of a general AI assistant starter app with fu
 - **TypeScript** - Type safety and improved developer experience
 - **TailwindCSS** - Utility-first CSS framework
 - **OpenAI API** - Powerful AI model integration
-- **Zustand** - State management 
+- **Zustand** - State management
 - **React Dropzone** - File upload functionality
 - **React Markdown** - Rich text rendering
 - **Lucide Icons** - Beautiful, consistent icon set
+- **Geist & Geist Mono Fonts** - Local variable fonts loaded with `next/font/local`
 
 ## 🛠️ Getting Started
 
