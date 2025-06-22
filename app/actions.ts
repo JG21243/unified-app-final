@@ -7,6 +7,7 @@ import type { z } from "zod"
 import { sql } from "@/lib/db"
 import { promptSchema } from "@/lib/validations/prompt"
 import { sanitizeInput } from "@/lib/validation-utils"
+import fallbackPrompts from "@/scripts/prompts-data.json"
 
 export type LegalPrompt = {
   id: number
@@ -29,18 +30,27 @@ export type PromptError = {
 
 export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: string | null }> {
   try {
-    // Check if DATABASE_URL is available
+    // When the database connection isn't configured, fall back to bundled prompt data
     if (!process.env.DATABASE_URL) {
-      console.error("DATABASE_URL is not set")
-      return {
-        prompts: [],
-        error: "Database connection not configured. Please check your environment variables.",
-      }
+      console.warn("DATABASE_URL is not set. Loading fallback prompts")
+      const prompts: LegalPrompt[] = (fallbackPrompts as any[]).map((p, i) => ({
+        id: i + 1,
+        name: p.title,
+        prompt: p.prompt,
+        category: p.category,
+        systemMessage: null,
+        createdAt: new Date().toISOString(),
+        variables: [],
+        usageCount: 0,
+        isFavorite: false,
+      }))
+      console.log(`Loaded ${prompts.length} fallback prompts`)
+      return { prompts, error: "Database connection not configured" }
     }
 
     const result = await sql`
       SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
-      FROM legalprompt 
+      FROM legalprompt
       ORDER BY "createdAt" DESC
     `
     const prompts: LegalPrompt[] = result.map(p => ({
@@ -50,13 +60,27 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
       isFavorite: p.isFavorite || false
     })) as LegalPrompt[]
 
+    console.log(`Fetched ${prompts.length} prompts from database`)
+
     return { prompts, error: null }
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e))
     console.error("Failed to fetch prompts:", error)
+    const prompts: LegalPrompt[] = (fallbackPrompts as any[]).map((p, i) => ({
+      id: i + 1,
+      name: p.title,
+      prompt: p.prompt,
+      category: p.category,
+      systemMessage: null,
+      createdAt: new Date().toISOString(),
+      variables: [],
+      usageCount: 0,
+      isFavorite: false,
+    }))
+    console.log(`Using ${prompts.length} fallback prompts due to error`)
     return {
-      prompts: [],
-      error: `Failed to fetch prompts: ${error.message}. Please check your database connection.`,
+      prompts,
+      error: `Failed to fetch prompts: ${error.message}`,
     }
   }
 }

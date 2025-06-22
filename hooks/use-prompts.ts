@@ -5,7 +5,10 @@ export function usePrompts() {
   const [prompts, setPrompts] = useState<LegalPrompt[]>([])
 
   useEffect(() => {
-    getPrompts().then(({ prompts }) => setPrompts(prompts))
+    getPrompts().then(({ prompts }) => {
+      console.log(`usePrompts loaded ${prompts.length} prompts`)
+      setPrompts(prompts)
+    })
   }, [])
 
   return { prompts }

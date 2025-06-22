@@ -31,6 +31,10 @@ export function ChatPromptSelector() {
     return true
   })
 
+  if (filteredPrompts.length === 0) {
+    console.warn("ChatPromptSelector: no prompts available to display")
+  }
+
   const handlePromptSelect = (value: string) => {
     setSelectedPrompt(value)
     const prompt = prompts.find((p) => String(p.id) === value)
