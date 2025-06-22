@@ -78,7 +78,7 @@ export function DashboardStats() {
             <Skeleton className="h-4 w-1/3" />
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className="h-72 w-full" />
           </CardContent>
         </Card>
       </div>

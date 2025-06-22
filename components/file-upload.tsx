@@ -289,7 +289,9 @@ export default function FileUpload({
           Upload File
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] md:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent
+        className="sm:max-w-lg md:max-w-xl max-h-[80vh] overflow-y-auto"
+      >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-xl">Add files to your vector store</DialogTitle>
@@ -400,7 +402,7 @@ export default function FileUpload({
             ) : (
               <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center h-[180px] cursor-pointer transition-colors ${
+                className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center h-44 cursor-pointer transition-colors ${
                   isDragActive
                     ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
                     : isDragReject

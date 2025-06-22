@@ -57,7 +57,8 @@ export function CategorySelect({ categories, value, onChange, allowCreate }: Cat
         </div>
       ) : (
         <Select onValueChange={handleValueChange} value={value}>
-          <SelectTrigger className="w-[180px]">
+          {/* Approximate 180px width using the closest spacing utility */}
+          <SelectTrigger className="w-44">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
