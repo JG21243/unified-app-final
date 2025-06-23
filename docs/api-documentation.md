@@ -124,3 +124,7 @@ Endpoints for managing OpenAI vector stores.
 - **`/api/vector_stores/list_files`** – GET: list files in a vector store (provide `vector_store_id` query param).
 - **`/api/vector_stores/retrieve_store`** – GET: retrieve store metadata by ID.
 
+### `/api/prompts` – GET
+Return all prompts with fallback data when the database is unavailable. Used by
+client hooks to populate prompt selectors.
+
