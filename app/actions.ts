@@ -552,6 +552,50 @@ export async function getCategories(): Promise<string[]> {
   }
 }
 
+export async function addCategory(name: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`
+      INSERT INTO legalprompt (name, prompt, category, "systemMessage")
+      VALUES ('Category Template', 'Template for category', ${name}, NULL)
+    `
+    return { success: true }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error("Error adding category:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function renameCategory(oldName: string, newName: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`
+      UPDATE legalprompt
+      SET category = ${newName}
+      WHERE category = ${oldName}
+    `
+    return { success: true }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error("Error renaming category:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function deleteCategory(name: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`
+      UPDATE legalprompt
+      SET category = 'Uncategorized'
+      WHERE category = ${name}
+    `
+    return { success: true }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error("Error deleting category:", error)
+    return { success: false, error: error.message }
+  }
+}
+
 
 export async function getPromptStats(): Promise<{
   total: number

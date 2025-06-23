@@ -17,7 +17,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { sql } from "@/lib/db"
+import {
+  addCategory,
+  renameCategory,
+  deleteCategory,
+} from "@/app/actions"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface CategoryManagerProps {
@@ -36,11 +40,10 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
     if (!newCategory.trim()) return
 
     try {
-      // This is a simplified approach - in a real app, you might want to create a proper categories table
-      await sql`
-        INSERT INTO legalprompt (name, prompt, category, "systemMessage")
-        VALUES ('Category Template', 'Template for category', ${newCategory}, NULL)
-      `
+      const result = await addCategory(newCategory)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
 
       setCategories([...categories, newCategory])
       setNewCategory("")
@@ -68,12 +71,10 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
     const oldCategory = categories[index]
 
     try {
-      // Update all prompts with the old category
-      await sql`
-        UPDATE legalprompt
-        SET category = ${editValue}
-        WHERE category = ${oldCategory}
-      `
+      const result = await renameCategory(oldCategory, editValue)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
 
       const newCategories = [...categories]
       newCategories[index] = editValue
@@ -101,12 +102,10 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
     const categoryToDelete = categories[deleteIndex]
 
     try {
-      // Update prompts to use a default category
-      await sql`
-        UPDATE legalprompt
-        SET category = 'Uncategorized'
-        WHERE category = ${categoryToDelete}
-      `
+      const result = await deleteCategory(categoryToDelete)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
 
       const newCategories = categories.filter((_, i) => i !== deleteIndex)
       setCategories(newCategories)

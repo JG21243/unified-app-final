@@ -11,6 +11,10 @@ import * as schema from "./db/schema"
 // runtime.
 const DATABASE_URL = process.env["DATABASE_URL"] || process.env["POSTGRES_URL"]
 
+if (DATABASE_URL) {
+  console.log("DATABASE_URL detected for database client")
+}
+
 let sql: ReturnType<typeof neon> | ((...args: any[]) => Promise<unknown[]>)
 let db: ReturnType<typeof drizzle> | null
 
