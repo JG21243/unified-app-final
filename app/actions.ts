@@ -378,7 +378,8 @@ export async function updateLegalPrompt(
       SET name = ${sanitizedData.name},
           prompt = ${sanitizedData.prompt},
           category = ${sanitizedData.category},
-          "systemMessage" = ${sanitizedData.systemMessage}
+          "systemMessage" = ${sanitizedData.systemMessage},
+          "updatedAt" = NOW()
       WHERE id = ${id}
       RETURNING id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
     `

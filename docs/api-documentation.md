@@ -48,7 +48,8 @@ if (result.success) {
 Update an existing prompt with standard form data and redirect.
 
 #### `updateLegalPrompt(id: number, data)`
-Update a prompt using a typed object. Returns the updated record on success.
+Update a prompt using a typed object. Returns the updated record on success and
+sets the `updatedAt` timestamp to the current time.
 
 #### `deletePrompt(id: number)`
 Remove a prompt and redirect to the home page.
