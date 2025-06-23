@@ -2,22 +2,40 @@ import { neon } from "@neondatabase/serverless"
 import { drizzle } from "drizzle-orm/neon-http"
 import * as schema from "./db/schema"
 
-// Make sure we're using the DATABASE_URL environment variable
-// The error suggests this might not be properly set or accessed
-const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL
+// Read the database URL from the environment. Some development setups may omit
+// this variable, so we provide a graceful fallback rather than throwing during
+// import which would break server actions.
+// Use bracket notation so Next.js doesn't inline the value at build time.
+// This ensures the variable is read at runtime and works in deployed
+// environments like Vercel where the value may differ between build and
+// runtime.
+const DATABASE_URL = process.env["DATABASE_URL"] || process.env["POSTGRES_URL"]
 
-if (!DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is not set. Please configure your database connection.")
+if (DATABASE_URL) {
+  console.log("DATABASE_URL detected for database client")
 }
 
-// Create a SQL query executor using the Neon serverless driver
-const neonClient = neon(DATABASE_URL)
+let sql: ReturnType<typeof neon> | ((...args: any[]) => Promise<unknown[]>)
+let db: ReturnType<typeof drizzle> | null
 
-// Create a drizzle instance with the neon client and our schema
-export const db = drizzle(neonClient, { schema })
+if (!DATABASE_URL) {
+  console.warn(
+    "DATABASE_URL is not set. Database features are disabled; using mock client.",
+  )
+  // Provide a mock sql function so calls fail gracefully
+  sql = async (..._args: any[]) => {
+    console.warn("Mock SQL called with:", _args[0])
+    return []
+  }
+  db = null
+} else {
+  const neonClient = neon(DATABASE_URL)
+  sql = neonClient
+  db = drizzle(neonClient, { schema })
+}
 
-// Export the sql tagged template function from drizzle-orm
-export { neonClient as sql }
+// Export the sql tagged template function and db instance (may be null)
+export { sql, db }
 
 // Helper function with timeout
 export async function executeQueryWithTimeout<T>(queryFn: () => Promise<T>, timeout = 10000): Promise<T> {

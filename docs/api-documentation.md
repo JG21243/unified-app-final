@@ -48,7 +48,8 @@ if (result.success) {
 Update an existing prompt with standard form data and redirect.
 
 #### `updateLegalPrompt(id: number, data)`
-Update a prompt using a typed object. Returns the updated record on success.
+Update a prompt using a typed object. Returns the updated record on success and
+sets the `updatedAt` timestamp to the current time.
 
 #### `deletePrompt(id: number)`
 Remove a prompt and redirect to the home page.
@@ -122,4 +123,8 @@ Endpoints for managing OpenAI vector stores.
 - **`/api/vector_stores/upload_file`** – POST: upload a file (≤25MB) for embedding.
 - **`/api/vector_stores/list_files`** – GET: list files in a vector store (provide `vector_store_id` query param).
 - **`/api/vector_stores/retrieve_store`** – GET: retrieve store metadata by ID.
+
+### `/api/prompts` – GET
+Return all prompts with fallback data when the database is unavailable. Used by
+client hooks to populate prompt selectors.
 

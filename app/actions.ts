@@ -7,6 +7,7 @@ import type { z } from "zod"
 import { sql } from "@/lib/db"
 import { promptSchema } from "@/lib/validations/prompt"
 import { sanitizeInput } from "@/lib/validation-utils"
+import fallbackPrompts from "@/scripts/prompts-data.json"
 
 export type LegalPrompt = {
   id: number
@@ -29,18 +30,29 @@ export type PromptError = {
 
 export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: string | null }> {
   try {
-    // Check if DATABASE_URL is available
-    if (!process.env.DATABASE_URL) {
-      console.error("DATABASE_URL is not set")
-      return {
-        prompts: [],
-        error: "Database connection not configured. Please check your environment variables.",
-      }
+    // When the database connection isn't configured, fall back to bundled prompt data
+    // Access the variable dynamically so its value is read at runtime. Next.js
+    // may inline environment variables if dot notation is used.
+    if (!process.env["DATABASE_URL"]) {
+      console.warn("DATABASE_URL is not set. Loading fallback prompts")
+      const prompts: LegalPrompt[] = (fallbackPrompts as any[]).map((p, i) => ({
+        id: i + 1,
+        name: p.title,
+        prompt: p.prompt,
+        category: p.category,
+        systemMessage: null,
+        createdAt: new Date().toISOString(),
+        variables: [],
+        usageCount: 0,
+        isFavorite: false,
+      }))
+      console.log(`Loaded ${prompts.length} fallback prompts`)
+      return { prompts, error: "Database connection not configured" }
     }
 
     const result = await sql`
       SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
-      FROM legalprompt 
+      FROM legalprompt
       ORDER BY "createdAt" DESC
     `
     const prompts: LegalPrompt[] = result.map(p => ({
@@ -50,13 +62,27 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
       isFavorite: p.isFavorite || false
     })) as LegalPrompt[]
 
+    console.log(`Fetched ${prompts.length} prompts from database`)
+
     return { prompts, error: null }
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e))
     console.error("Failed to fetch prompts:", error)
+    const prompts: LegalPrompt[] = (fallbackPrompts as any[]).map((p, i) => ({
+      id: i + 1,
+      name: p.title,
+      prompt: p.prompt,
+      category: p.category,
+      systemMessage: null,
+      createdAt: new Date().toISOString(),
+      variables: [],
+      usageCount: 0,
+      isFavorite: false,
+    }))
+    console.log(`Using ${prompts.length} fallback prompts due to error`)
     return {
-      prompts: [],
-      error: `Failed to fetch prompts: ${error.message}. Please check your database connection.`,
+      prompts,
+      error: `Failed to fetch prompts: ${error.message}`,
     }
   }
 }
@@ -348,14 +374,17 @@ export async function updateLegalPrompt(
     }
 
     const result = await sql`
-      UPDATE legalprompt 
-      SET name = ${sanitizedData.name}, 
-          prompt = ${sanitizedData.prompt}, 
-          category = ${sanitizedData.category}, 
-          "systemMessage" = ${sanitizedData.systemMessage}
-      WHERE id = ${id} 
+      UPDATE legalprompt
+      SET name = ${sanitizedData.name},
+          prompt = ${sanitizedData.prompt},
+          category = ${sanitizedData.category},
+          "systemMessage" = ${sanitizedData.systemMessage},
+          "updatedAt" = NOW()
+      WHERE id = ${id}
       RETURNING id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
     `
+
+    console.log(`Updated prompt ${id}`, result[0])
     
     const updatedPrompt = result[0]
 
@@ -520,6 +549,50 @@ export async function getCategories(): Promise<string[]> {
     const error = e instanceof Error ? e : new Error(String(e))
     console.error("Error fetching categories:", error)
     return []
+  }
+}
+
+export async function addCategory(name: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`
+      INSERT INTO legalprompt (name, prompt, category, "systemMessage")
+      VALUES ('Category Template', 'Template for category', ${name}, NULL)
+    `
+    return { success: true }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error("Error adding category:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function renameCategory(oldName: string, newName: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`
+      UPDATE legalprompt
+      SET category = ${newName}
+      WHERE category = ${oldName}
+    `
+    return { success: true }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error("Error renaming category:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function deleteCategory(name: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`
+      UPDATE legalprompt
+      SET category = 'Uncategorized'
+      WHERE category = ${name}
+    `
+    return { success: true }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error("Error deleting category:", error)
+    return { success: false, error: error.message }
   }
 }
 
