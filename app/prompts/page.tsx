@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus, Inbox, AlertTriangle } from "lucide-react";
+import { Plus, AlertTriangle } from "lucide-react";
 
 import { getPrompts } from "@/app/actions";
-import { PromptCardSkeleton } from "@/components/prompt-card-skeleton";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
+import { PromptsListSkeleton, EmptyPromptsState, PromptCardSkeleton } from "@/components/loading-states";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 async function PromptList() {
   try {
@@ -14,18 +15,19 @@ async function PromptList() {
 
     if (error) {
       return (
-        <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-5 w-5 text-red-700 flex-shrink-0" />
-            <h2 className="text-xl font-semibold">Error</h2>
-          </div>
-          <p>{error}</p>
-          <p className="mt-4 text-sm">
-            You may need to create the database table. Please run the following
-            SQL:
-          </p>
-          <pre className="mt-2 p-2 sm:p-4 bg-gray-800 text-gray-100 rounded-md overflow-x-auto text-xs sm:text-sm">
-            {`CREATE TABLE IF NOT EXISTS legalprompt (
+        <Alert className="mt-6" variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-3">
+              <div>
+                <strong>Database Error:</strong> {error}
+              </div>
+              <details className="text-sm">
+                <summary className="cursor-pointer font-medium hover:underline">
+                  Show database setup instructions
+                </summary>
+                <div className="mt-3 p-3 bg-slate-900 text-slate-100 rounded-md overflow-x-auto text-xs font-mono">
+                  <pre>{`CREATE TABLE IF NOT EXISTS legalprompt (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   prompt TEXT NOT NULL,
@@ -33,47 +35,50 @@ async function PromptList() {
   "systemMessage" TEXT,
   "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);`}
-          </pre>
-        </div>
+);`}</pre>
+                </div>
+              </details>
+            </div>
+          </AlertDescription>
+        </Alert>
       );
     }
 
     if (!prompts || prompts.length === 0) {
-      return (
-        <div className="mt-4 sm:mt-8 flex flex-col items-center justify-center rounded-xl border border-dashed p-6 sm:p-12 text-center bg-muted/20">
-          <Inbox className="h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-xl sm:text-2xl font-semibold">
-            No prompts found
-          </h2>
-          <p className="mt-3 text-muted-foreground max-w-md px-4 text-sm sm:text-base">
-            Get started by creating a new prompt for your legal AI workflows.
-          </p>
-          {/* The "Create Your First Prompt" button, if present in the original empty state, was removed in a previous step */}
-        </div>
-      );
+      return <EmptyPromptsState />;
     }
 
     return (
-      <div className="mt-4 sm:mt-8 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {prompts.map((prompt) => (
           <div
             key={prompt.id}
-            className="bg-card rounded-lg border p-4 hover:shadow-md transition-shadow"
+            className="group bg-card rounded-lg border p-4 hover:shadow-md hover:border-primary/20 transition-all duration-200"
           >
-            <h3 className="font-medium mb-2">{prompt.name}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-              {prompt.prompt.startsWith("# ")
-                ? prompt.prompt.substring(2)
-                : prompt.prompt}
-            </p>
-            <div className="flex justify-between items-center">
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                {prompt.category}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors">
+                {prompt.name}
+              </h3>
+              
+              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                {prompt.prompt.startsWith("# ")
+                  ? prompt.prompt.substring(2)
+                  : prompt.prompt}
+              </p>
+            </div>
+            
+            <div className="flex justify-between items-center mt-4 pt-3 border-t border-border/50">
+              <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium">
+                {prompt.category || 'Uncategorized'}
               </span>
+              
               <Link href={`/prompts/${prompt.id}`} passHref>
-                <Button variant="outline" size="sm">
-                  View
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-8 text-xs hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  View Details
                 </Button>
               </Link>
             </div>
@@ -84,23 +89,40 @@ async function PromptList() {
   } catch (error) {
     console.error("Error in PromptList:", error);
     return (
-      <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-red-50 border border-red-200 rounded-lg text-red-700">
-        <div className="flex items-center gap-2 mb-2">
-          <AlertTriangle className="h-5 w-5 text-red-700 flex-shrink-0" />
-          <h2 className="text-xl font-semibold">Error</h2>
-        </div>
-        <p>An unexpected error occurred while loading prompts.</p>
-        <p className="mt-2 text-sm font-mono">
-          {error instanceof Error ? error.message : String(error)}
-        </p>
-      </div>
+      <Alert className="mt-6" variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          <div className="space-y-2">
+            <div>
+              <strong>Unexpected Error:</strong> An error occurred while loading prompts.
+            </div>
+            <div className="text-sm font-mono bg-slate-100 p-2 rounded border">
+              {error instanceof Error ? error.message : String(error)}
+            </div>
+            <div className="flex gap-2 mt-3">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => window.location.reload()}
+              >
+                Retry
+              </Button>
+              <Link href="/prompts/new">
+                <Button size="sm">
+                  Create New Prompt
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </AlertDescription>
+      </Alert>
     );
   }
 }
 
 function PromptListSkeleton() {
   return (
-    <div className="mt-4 sm:mt-8 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-6 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
         <PromptCardSkeleton key={i} />
       ))}
@@ -112,7 +134,8 @@ export default async function PromptsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Prompts"
+        title="Legal Prompts"
+        description="Manage and organize your AI prompts for legal workflows"
       />
       <Suspense fallback={<PromptListSkeleton />}>
         <PromptList />

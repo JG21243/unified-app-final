@@ -1,53 +1,304 @@
 "use client"
 
-import { useState, useEffect, FormEvent, ChangeEvent } from "react"
-import { Search, SlidersHorizontal, X, Calendar } from "lucide-react"
-import { Input } from "./ui/input"
-import { Button } from "./ui/Button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "./ui/dropdown-menu"
-import { Badge } from "./ui/badge"
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
-import { Calendar as CalendarComponent } from "./ui/calendar"
-import { Combobox } from "./ui/combobox"
-import { Switch } from "./ui/switch"
-import { Label } from "./ui/label"
-import { format } from "date-fns"
+import { useState, useEffect } from "react"
+import { Search, Filter, X, Tag, SlidersHorizontal } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface AdvancedSearchProps {
-  categories: string[]
   onSearch: (filters: SearchFilters) => void
-  initialFilters?: {
-    search?: string
-    category?: string
-  }
+  categories?: string[]
+  tags?: string[]
+  isLoading?: boolean
+  initialFilters?: Partial<SearchFilters>
 }
 
 export interface SearchFilters {
   term: string
-  categories: string[]
-  dateRange: {
-    from: Date | undefined
-    to: Date | undefined
-  }
+  category: string | null
+  tags: string[]
+  sortBy: 'name' | 'created' | 'updated' | 'category'
+  sortOrder: 'asc' | 'desc'
   includeSystemMessages: boolean
-  sortBy: string
 }
 
-export function AdvancedSearch({ categories, onSearch, initialFilters }: AdvancedSearchProps) {
-  const [searchTerm, setSearchTerm] = useState(initialFilters?.search || "")
-  const [selectedCategories, setSelectedCategories] = useState(
-    (initialFilters?.category ? [initialFilters.category] : []) as string[],
-  )
-  const [dateRange, setDateRange] = useState(
-    { from: undefined, to: undefined } as { from: Date | undefined; to: Date | undefined },
-  )
-  const [includeSystemMessages, setIncludeSystemMessages] = useState(true)
-  const [sortBy, setSortBy] = useState("createdAt-desc")
-  const [activeFilters, setActiveFilters] = useState([] as string[])
-  const [selectedCategory, setSelectedCategory] = useState("")
+export function AdvancedSearch({ 
+  onSearch, 
+  categories = [], 
+  tags = [], 
+  isLoading = false,
+  initialFilters = {}
+}: AdvancedSearchProps) {
+  const [filters, setFilters] = useState<SearchFilters>({
+    term: "",
+    category: null,
+    tags: [],
+    sortBy: 'updated',
+    sortOrder: 'desc',
+    includeSystemMessages: true,
+    ...initialFilters
+  })
+  
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
 
-  // Update active filters
+  // Trigger search when filters change
   useEffect(() => {
+    if (hasSearched) {
+      onSearch(filters)
+    }
+  }, [filters, onSearch, hasSearched])
+
+  const handleSearch = (newFilters: Partial<SearchFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }))
+    setHasSearched(true)
+  }
+
+  const clearFilters = () => {
+    const clearedFilters: SearchFilters = {
+      term: "",
+      category: null,
+      tags: [],
+      sortBy: 'updated',
+      sortOrder: 'desc',
+      includeSystemMessages: true
+    }
+    setFilters(clearedFilters)
+    setHasSearched(true)
+  }
+
+  const hasActiveFilters = filters.term || filters.category || filters.tags.length > 0
+
+  return (
+    <Card className="border-0 bg-muted/20">
+      <CardContent className="p-4 space-y-4">
+        {/* Main search bar */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search prompts by name, content, or category..."
+              value={filters.term}
+              onChange={(e) => handleSearch({ term: e.target.value })}
+              className="pl-10 h-11 bg-background"
+              disabled={isLoading}
+            />
+            {filters.term && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                onClick={() => handleSearch({ term: "" })}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Popover open={showAdvanced} onOpenChange={setShowAdvanced}>
+            <PopoverTrigger asChild>
+              <Button
+                variant={hasActiveFilters ? "default" : "outline"}
+                size="sm"
+                className="h-11 px-3 gap-2"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Advanced
+                {hasActiveFilters && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {(filters.category ? 1 : 0) + filters.tags.length}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80" align="end">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold">Advanced Filters</h4>
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="h-8 px-2 text-xs"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Clear all
+                    </Button>
+                  )}
+                </div>
+
+                {/* Category filter */}
+                {categories.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Category</label>
+                    <Select
+                      value={filters.category || "all"}
+                      onValueChange={(value) => 
+                        handleSearch({ category: value === "all" ? null : value })
+                      }
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder="All categories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All categories</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Tags filter */}
+                {tags.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tags</label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded p-2 bg-background">
+                      {tags.map((tag) => (
+                        <div key={tag} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`tag-${tag}`}
+                            checked={filters.tags.includes(tag)}
+                            onCheckedChange={(checked) => {
+                              const newTags = checked
+                                ? [...filters.tags, tag]
+                                : filters.tags.filter(t => t !== tag)
+                              handleSearch({ tags: newTags })
+                            }}
+                          />
+                          <label 
+                            htmlFor={`tag-${tag}`} 
+                            className="text-sm cursor-pointer flex-1"
+                          >
+                            {tag}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sort options */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Sort by</label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={filters.sortBy}
+                      onValueChange={(value: SearchFilters['sortBy']) => 
+                        handleSearch({ sortBy: value })
+                      }
+                    >
+                      <SelectTrigger className="flex-1 h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name">Name</SelectItem>
+                        <SelectItem value="created">Date Created</SelectItem>
+                        <SelectItem value="updated">Last Updated</SelectItem>
+                        <SelectItem value="category">Category</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select
+                      value={filters.sortOrder}
+                      onValueChange={(value: SearchFilters['sortOrder']) => 
+                        handleSearch({ sortOrder: value })
+                      }
+                    >
+                      <SelectTrigger className="w-24 h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="asc">↑ A-Z</SelectItem>
+                        <SelectItem value="desc">↓ Z-A</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Include system messages */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="include-system"
+                    checked={filters.includeSystemMessages}
+                    onCheckedChange={(checked) => 
+                      handleSearch({ includeSystemMessages: !!checked })
+                    }
+                  />
+                  <label htmlFor="include-system" className="text-sm">
+                    Include system messages
+                  </label>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Active filters display */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-2">
+            {filters.term && (
+              <Badge variant="secondary" className="gap-1">
+                <Search className="h-3 w-3" />
+                "{filters.term}"
+                <button
+                  onClick={() => handleSearch({ term: "" })}
+                  className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            
+            {filters.category && (
+              <Badge variant="secondary" className="gap-1">
+                <Tag className="h-3 w-3" />
+                {filters.category}
+                <button
+                  onClick={() => handleSearch({ category: null })}
+                  className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            
+            {filters.tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="gap-1">
+                <Tag className="h-3 w-3" />
+                {tag}
+                <button
+                  onClick={() => 
+                    handleSearch({ tags: filters.tags.filter(t => t !== tag) })
+                  }
+                  className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Search results summary */}
+        {hasSearched && (
+          <div className="text-sm text-muted-foreground">
+            Searching with {filters.sortBy} sorting ({filters.sortOrder === 'desc' ? 'newest' : 'oldest'} first)
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
     const filters: string[] = []
 
     if (selectedCategories.length > 0) {
