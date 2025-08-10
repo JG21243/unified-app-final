@@ -62,25 +62,35 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
   }, []);
 
   return (
-    <div className="flex justify-center items-center size-full">
-      <div className="flex grow flex-col h-full max-w-[750px] gap-2">
-        <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 flex flex-col scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
-          <div className="mt-auto space-y-2 py-4">
-            {items.length === 0 && (
-              <div className="flex flex-col items-center justify-center text-center p-8 my-8">
-                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-full p-4 mb-4 shadow-md">
-                  <Sparkles size={32} />
-                </div>
-                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">Welcome to Gemini 2.5 Pro</h2>
-                <p className="text-gray-500 dark:text-gray-400 max-w-sm">Ask me anything and I&apos;ll do my best to help you with your questions.</p>
+    <div className="flex flex-col h-full max-w-4xl mx-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+        <div className="min-h-full flex flex-col">
+          {items.length === 0 && (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 max-w-md mx-auto">
+              <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-full p-4 mb-6 shadow-lg">
+                <Sparkles size={32} />
               </div>
-            )}
+              <h2 className="text-2xl font-bold mb-3">Welcome to Legal AI Assistant</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                I'm here to help with your legal workflows. You can ask questions, use saved prompts, 
+                or start a conversation about legal topics.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Sparkles size={14} />
+                  Type <code className="bg-muted px-1 rounded">/prompt</code> to search prompts
+                </span>
+              </div>
+            </div>
+          )}
+          
+          <div className="space-y-4 py-4">
             {items.map((item, index) => (
               <React.Fragment key={index}>
                 {item.type === "tool_call" ? (
                   <ToolCall toolCall={item} />
                 ) : item.type === "message" ? (
-                  <div className="flex flex-col gap-1">
+                  <div className="space-y-2">
                     <Message message={item} />
                     {item.content &&
                       item.content[0].annotations &&
@@ -94,41 +104,35 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
               </React.Fragment>
             ))}
             
-            {/* Loading indicator */}
-            {isLoading && (
-              <div className="flex mb-4">
-                <div className="flex items-start gap-3">
-                  <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-full p-2 flex items-center justify-center h-8 w-8 mt-1 shadow-md">
-                    <Bot size={16} />
-                  </div>
-                  <div className="mr-4 rounded-2xl px-4 py-3 md:mr-8 text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 min-w-[120px]">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-shrink-0 h-4 w-4 relative">
-                        <div className="absolute h-4 w-4 rounded-full animate-ping bg-indigo-400 opacity-75"></div>
-                        <div className="relative rounded-full h-3 w-3 bg-indigo-500"></div>
-                      </div>
-                      <span className="text-gray-500 dark:text-gray-400">Gemini is thinking...</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             <div ref={itemsEndRef} />
           </div>
         </div>
-        
-        <div className="sticky bottom-0 p-4 md:px-6">
+      </div>
+
+      <div className="sticky bottom-0 p-4 md:px-6 bg-background/80 backdrop-blur-sm border-t">
+        <div className="max-w-4xl mx-auto">
+          {/* Show typing indicator if needed */}
+          {isLoading && (
+            <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+              </div>
+              <span>AI is thinking...</span>
+            </div>
+          )}
+          
           <div className="relative">
-            <div className="flex w-full items-end overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md focus-within:border-indigo-300 dark:focus-within:border-indigo-700 focus-within:ring-2 focus-within:ring-indigo-300 dark:focus-within:ring-indigo-700 transition-all">
+            <div className="flex w-full items-end overflow-hidden rounded-xl border bg-background shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
               <textarea
                 id="prompt-textarea"
                 ref={textareaRef}
                 tabIndex={0}
                 dir="auto"
                 rows={1}
-                placeholder="Message Gemini..."
-                className="min-h-[48px] max-h-[200px] w-full resize-none border-0 bg-transparent px-4 py-3 text-sm focus:outline-none text-gray-800 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                placeholder="Type your message... (Use /prompt to search prompts)"
+                className="min-h-[52px] max-h-[200px] w-full resize-none border-0 bg-transparent px-4 py-3 text-sm focus:outline-none placeholder:text-muted-foreground"
                 value={inputMessageText}
                 onChange={(e) => {
                   setinputMessageText(e.target.value);
@@ -140,13 +144,19 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
                 onCompositionStart={() => setIsComposing(true)}
                 onCompositionEnd={() => setIsComposing(false)}
                 disabled={isLoading}
+                aria-label="Message input"
               />
+              
+              {/* Prompt suggestions dropdown */}
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute bottom-12 left-0 w-full bg-popover border rounded-md shadow-md max-h-40 overflow-y-auto z-50">
-                  {suggestions.map((p) => (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+                  <div className="p-2 border-b bg-muted/50">
+                    <span className="text-xs font-medium text-muted-foreground">Available Prompts</span>
+                  </div>
+                  {suggestions.map((p, index) => (
                     <button
                       key={p.id}
-                      className="block w-full text-left px-3 py-1 hover:bg-muted"
+                      className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors border-b last:border-b-0 focus:outline-none focus:bg-accent"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         const textarea = document.getElementById('prompt-textarea') as HTMLTextAreaElement | null;
@@ -159,44 +169,61 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
                         setCurrentPromptId(p.id);
                         setShowSuggestions(false);
                       }}
+                      aria-label={`Use prompt: ${p.name}`}
                     >
-                      {p.name}
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="font-medium text-sm">{p.name}</span>
+                      </div>
+                      {p.category && (
+                        <span className="text-xs text-muted-foreground mt-1 block">
+                          {p.category}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
               )}
-              <button
-                disabled={!inputMessageText || isLoading}
-                data-testid="send-button"
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full mr-1 mb-1 transition-all ${
-                  inputMessageText && !isLoading 
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90' 
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
-                }`}
-                onClick={() => {
-                  if (inputMessageText.trim()) {
-                    onSendMessage(inputMessageText);
-                    if (currentPromptId !== null) {
-                      addUsedPromptId(currentPromptId);
-                      setCurrentPromptId(null);
+              
+              {/* Send button */}
+              <div className="flex items-end p-2">
+                <button
+                  disabled={!inputMessageText.trim() || isLoading}
+                  data-testid="send-button"
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                    inputMessageText.trim() && !isLoading 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm' 
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  }`}
+                  onClick={() => {
+                    if (inputMessageText.trim()) {
+                      onSendMessage(inputMessageText);
+                      if (currentPromptId !== null) {
+                        addUsedPromptId(currentPromptId);
+                        setCurrentPromptId(null);
+                      }
+                      setinputMessageText("");
+                      // Reset textarea height
+                      const textarea = document.getElementById('prompt-textarea');
+                      if (textarea) textarea.style.height = 'auto';
                     }
-                    setinputMessageText("");
-                    // Reset textarea height
-                    const textarea = document.getElementById('prompt-textarea');
-                    if (textarea) textarea.style.height = 'auto';
-                  }
-                }}
-              >
-                {isLoading ? (
-                  <Loader size={18} className="animate-spin" />
-                ) : (
-                  <Send size={16} />
-                )}
-              </button>
+                  }}
+                  aria-label="Send message"
+                >
+                  {isLoading ? (
+                    <Loader size={18} className="animate-spin" />
+                  ) : (
+                    <Send size={16} />
+                  )}
+                </button>
+              </div>
             </div>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-              Press Enter to send, Shift+Enter for a new line
-            </p>
+            
+            {/* Help text */}
+            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Press Enter to send, Shift+Enter for new line</span>
+              <span>{inputMessageText.length} characters</span>
+            </div>
           </div>
         </div>
       </div>
