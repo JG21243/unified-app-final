@@ -1,0 +1,139 @@
+# Cursor AI Rules for unified-app-final
+
+## Project Context
+This is a Next.js 15.2.3 TypeScript AI assistant application with React 19, featuring chat interfaces, vector store integration, and prompt management. The codebase combines openai-responses-starter-app and legal-prompts-app functionality.
+
+## Core Technologies & Constraints
+- Next.js 15.2.3 App Router with React 19
+- TypeScript 5 strict mode required
+- TailwindCSS with custom design tokens in design/
+- PostgreSQL via Drizzle ORM (never run migrations outside CI)
+- Zustand for state management
+- OpenAI API integration with vector stores
+- npm package manager (maintain package-lock.json)
+
+## Code Generation Rules
+
+### React Components
+- Default to Server Components unless interactivity needed
+- Use 'use client' directive only when absolutely necessary
+- Follow React 19 patterns and hooks
+- Implement proper TypeScript interfaces with Zod validation
+- Use cn() utility for className merging with TailwindCSS
+
+### File Organization
+- Server Components: app/ directory
+- Client Components: components/ directory
+- UI primitives: components/ui/
+- Server actions: app/actions/
+- API routes: app/api/
+- Database operations: lib/db/
+- Custom tools: lib/tools/
+
+### TypeScript Standards
+- Strict mode compliance
+- Explicit typing preferred over inference
+- Use Zod schemas for all data validation
+- Interface over type for component props
+- Proper error handling with typed catch blocks
+
+### Database Operations
+- Use Drizzle ORM exclusively
+- Implement proper transactions for complex operations
+- Never suggest migrations without explicit user confirmation
+- Use Neon serverless driver patterns
+
+### Styling Guidelines
+- TailwindCSS utility classes only
+- Follow headwind plugin ordering
+- Use design tokens from design/ directory
+- Responsive design mobile-first approach
+- Dark/light mode support via next-themes
+
+### AI Integration Patterns
+- Vector store operations ≤25MB file limit
+- Streaming responses for real-time UX
+- Custom function calling via config/functions.ts
+- OpenAI API error handling and retries
+
+## Code Style Enforcement
+- Prettier formatting automatic
+- ESLint rules compliance
+- Conventional commit messages required
+- 90% test coverage threshold
+- No unused variables or imports
+
+## Security & Safety
+- Never include real API keys in suggestions
+- Use .env.example for environment templates
+- Validate all user inputs with Zod
+- Implement proper error boundaries
+- Use server-only imports for sensitive code
+
+## Development Patterns
+
+### Preferred Imports
+```typescript
+import { NextRequest } from 'next/server'
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
+import { cn } from '@/lib/utils'
+```
+
+### Component Pattern
+```typescript
+'use client' // only if needed
+
+interface ComponentProps {
+  // Use descriptive, typed props
+}
+
+export function ComponentName({ prop }: ComponentProps) {
+  return (
+    <div className={cn("base-classes", conditionalClasses)}>
+      {/* Content */}
+    </div>
+  )
+}
+```
+
+### Server Action Pattern
+```typescript
+'use server'
+
+const schema = z.object({
+  // validation schema
+})
+
+export async function actionName(formData: FormData) {
+  const result = schema.safeParse(/* data */)
+  if (!result.success) return { error: 'Invalid input' }
+  
+  // Implementation
+}
+```
+
+## File Restrictions
+- Never modify: public/, .next/, node_modules/, generated artifacts
+- Ask before: database migrations, environment changes, package updates
+- Preserve: existing AGENTS.md content, project structure
+
+## Testing Requirements
+- Jest test files mirror source structure
+- Focus on component behavior and integration
+- Mock external dependencies appropriately
+- Maintain coverage threshold
+
+## Documentation Standards
+- Update relevant README sections for new features
+- Comment complex business logic only
+- Use JSDoc for exported functions
+- Reference AGENTS.md for comprehensive project context
+
+When suggesting code changes:
+1. Prioritize minimal, surgical modifications
+2. Maintain existing patterns and conventions  
+3. Include proper error handling
+4. Ensure TypeScript strict compliance
+5. Consider performance and accessibility
+6. Test suggestions against project constraints
