@@ -5,7 +5,7 @@ import ToolCall from "./tool-call";
 import Message from "./message";
 import Annotations from "./annotations";
 import { Item } from "@/lib/assistant";
-import { Bot, Loader, Send, Sparkles } from "lucide-react";
+import { Loader, Send, Sparkles } from "lucide-react";
 import { usePrompts } from "@/hooks/use-prompts";
 import useConversationStore from "@/stores/useConversationStore";
 

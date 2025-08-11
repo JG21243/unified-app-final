@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { Plus, Inbox, AlertTriangle, Pencil, MessageSquare } from "lucide-react"
+import { AlertTriangle, Pencil, MessageSquare } from "lucide-react"
 
 import { getLegalPromptById, getPromptTags } from "@/app/actions"
 import { Button } from "@/components/ui/button"
