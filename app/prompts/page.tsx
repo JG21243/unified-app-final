@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 import { getPrompts } from "@/app/actions";
 import { Button } from "@/components/ui/button";
