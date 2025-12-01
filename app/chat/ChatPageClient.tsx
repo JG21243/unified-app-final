@@ -2,10 +2,12 @@
 
 import { SparklesIcon, Menu, X, ListTodo, PanelLeft } from 'lucide-react';
 import ContextPanel from '@/components/tools-panel';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Assistant from '@/components/assistant';
 import ChatPromptSelector from '@/components/chat-prompt-selector';
 import PromptPicker from '@/components/prompt-picker';
+import { useSearchParams } from 'next/navigation';
+import useToolsStore from '@/stores/useToolsStore';
 
 interface ConfigPanelHeaderProps {
   onCollapse: () => void;
@@ -75,6 +77,10 @@ export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
   const [isToolsPanelOpen, setIsToolsPanelOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(true);
+  const searchParams = useSearchParams();
+  const loadPresets = useToolsStore((state) => state.loadPresets);
+  const applyPresetById = useToolsStore((state) => state.applyPresetById);
+  const sharedPresetId = useMemo(() => searchParams.get('presetId'), [searchParams]);
 
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
@@ -86,6 +92,20 @@ export default function ChatPageClient({ initialPrompt }: ChatPageClientProps) {
     window.addEventListener('keydown', handle);
     return () => window.removeEventListener('keydown', handle);
   }, []);
+
+  useEffect(() => {
+    const initializePresets = async () => {
+      await loadPresets(false);
+      const { presets, lastUsedPresetId } = useToolsStore.getState();
+      const fallbackPreset =
+        sharedPresetId ?? lastUsedPresetId ?? presets.find((preset) => preset.lastUsedAt)?.id;
+      if (fallbackPreset) {
+        await applyPresetById(fallbackPreset);
+      }
+    };
+
+    void initializePresets();
+  }, [applyPresetById, loadPresets, sharedPresetId]);
 
   return (
     <div className="flex flex-col justify-center min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
