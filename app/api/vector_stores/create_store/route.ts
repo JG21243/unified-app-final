@@ -4,10 +4,17 @@ import { NextResponse } from "next/server";
 const openai = new OpenAI();
 
 export async function POST(request: Request) {
-  const { name } = await request.json();
+  const { name, storeName } = await request.json();
+  const resolvedName = name || storeName;
+  if (!resolvedName) {
+    return NextResponse.json(
+      { error: "A store name is required to create a vector store." },
+      { status: 400 }
+    );
+  }
   try {
     const vectorStore = await openai.vectorStores.create({
-      name,
+      name: resolvedName,
     });
     return NextResponse.json(vectorStore, { status: 200 });
   } catch (error) {
