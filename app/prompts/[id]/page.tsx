@@ -4,6 +4,7 @@ import { AlertTriangle, Pencil, MessageSquare } from "lucide-react"
 
 import { getLegalPromptById, getPromptTags } from "@/app/actions"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { PageContainer } from "@/components/layout/page-container"
 import { PageHeader } from "@/components/layout/page-header"
 import { notFound } from "next/navigation"
@@ -52,6 +53,8 @@ async function PromptDataView({ promptId }: { promptId: number }) {
 
     const tags = await getPromptTags(promptId);
     const variables = prompt.variables || [];
+    const versions = prompt.versions || []
+    const metrics = prompt.metrics || { adoptionCount: 0, recentFailures: 0, lastUsedAt: null }
 
     return (
       <>
@@ -59,9 +62,18 @@ async function PromptDataView({ promptId }: { promptId: number }) {
           title={prompt.name}
           description={
             <div className="flex flex-wrap items-center gap-3 mt-2">
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+              <Badge variant="outline" className="text-xs capitalize">
+                {prompt.status || "draft"}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
                 {prompt.category || "Uncategorized"}
-              </span>
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                Owner: {prompt.owner || "unassigned"}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                v{prompt.latestVersion ?? 1}
+              </Badge>
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {tags.map((tag) => (
@@ -138,7 +150,65 @@ async function PromptDataView({ promptId }: { promptId: number }) {
             </Card>
           </div>
 
-          <div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="bg-muted/30 pb-3">
+                <CardTitle>Quality metrics</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground">Adoption count</p>
+                  <p className="text-lg font-semibold">{metrics.adoptionCount}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Recent failures</p>
+                  <p className="text-lg font-semibold">{metrics.recentFailures}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Last reviewed</p>
+                  <p className="text-sm font-medium">
+                    {prompt.lastReviewedAt ? new Date(prompt.lastReviewedAt).toLocaleString() : "Pending"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Last used</p>
+                  <p className="text-sm font-medium">{metrics.lastUsedAt ? new Date(metrics.lastUsedAt).toLocaleString() : "n/a"}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="bg-muted/30 pb-3">
+                <CardTitle>Version history</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                {versions.length === 0 && <p className="text-sm text-muted-foreground">No versions recorded yet.</p>}
+                {versions.map((version) => (
+                  <div key={version.id} className="rounded-lg border p-3 space-y-1 bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">v{version.versionNumber}</Badge>
+                        <Badge variant={version.status === "published" ? "default" : "secondary"} className="capitalize">
+                          {version.status}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(version.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {version.diffSummary && (
+                      <p className="text-sm text-muted-foreground">{version.diffSummary}</p>
+                    )}
+                    <div className="text-xs text-muted-foreground flex flex-wrap gap-3">
+                      <span>Author: {version.createdBy}</span>
+                      {version.reviewedBy && <span>Reviewed by: {version.reviewedBy}</span>}
+                      {version.reviewedAt && <span>Reviewed at: {new Date(version.reviewedAt).toLocaleDateString()}</span>}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             <PromptTesterStreaming
               promptId={promptId}
               prompt={prompt.prompt}

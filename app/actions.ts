@@ -17,9 +17,37 @@ export type LegalPrompt = {
   systemMessage: string | null
   createdAt: string
   updatedAt?: string
+  status?: PromptStatus
+  owner?: string
+  lastReviewedAt?: string | null
+  latestVersion?: number
+  publishedVersion?: number
   variables?: string[]
   usageCount?: number
   isFavorite?: boolean
+  metrics?: PromptMetrics
+  versions?: PromptVersionDetails[]
+}
+
+export type PromptStatus = "draft" | "review" | "published"
+
+export type PromptMetrics = {
+  adoptionCount: number
+  recentFailures: number
+  lastUsedAt?: string | null
+}
+
+export type PromptVersionDetails = {
+  id: number
+  versionNumber: number
+  prompt: string
+  systemMessage: string | null
+  status: PromptStatus
+  createdAt: string
+  createdBy: string
+  diffSummary?: string | null
+  reviewedBy?: string | null
+  reviewedAt?: string | null
 }
 
 export type PromptError = {
@@ -28,85 +56,83 @@ export type PromptError = {
   code?: string
 }
 
-export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: string | null }> {
+export async function getPrompts(filters?: {
+  status?: PromptStatus
+  category?: string
+  owner?: string
+}): Promise<{ prompts: LegalPrompt[]; error: string | null }> {
   try {
     // When the database connection isn't configured, fall back to bundled prompt data
     // Access the variable dynamically so its value is read at runtime. Next.js
     // may inline environment variables if dot notation is used.
     if (!process.env["DATABASE_URL"]) {
       console.warn("DATABASE_URL is not set. Loading fallback prompts")
-      const prompts: LegalPrompt[] = (fallbackPrompts as any[]).map((p, i) => ({
-        id: i + 1,
-        name: p.title,
-        prompt: p.prompt,
-        category: p.category,
-        systemMessage: null,
-        createdAt: new Date().toISOString(),
-        variables: [],
-        usageCount: 0,
-        isFavorite: false,
-      }))
-      console.log(`Loaded ${prompts.length} fallback prompts`)
-      return { prompts, error: "Database connection not configured" }
+      const prompts: LegalPrompt[] = buildFallbackPrompts()
+
+      const filteredPrompts = applyPromptFilters(prompts, filters)
+      console.log(`Loaded ${filteredPrompts.length} filtered fallback prompts`)
+      return { prompts: filteredPrompts, error: "Database connection not configured" }
     }
 
     const result = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
-      FROM legalprompt
-      ORDER BY "createdAt" DESC
+      SELECT p.id, p.name, p.prompt, p.category, p."systemMessage", p."createdAt", p."updatedAt",
+             p.status, p.owner, p."lastReviewedAt", p."latestVersion", p."publishedVersion",
+             COALESCE(u.adoption_count, 0) AS "adoptionCount",
+             COALESCE(u.recent_failures, 0) AS "recentFailures",
+             u.last_used_at AS "lastUsedAt"
+      FROM legalprompt p
+      LEFT JOIN (
+        SELECT "promptId", 
+               COUNT(*) FILTER (WHERE result = 'success') AS adoption_count,
+               COUNT(*) FILTER (WHERE result = 'failure' AND "createdAt" > NOW() - INTERVAL '30 days') AS recent_failures,
+               MAX("createdAt") AS last_used_at
+        FROM prompt_usage_logs
+        GROUP BY "promptId"
+      ) u ON u."promptId" = p.id
+      ORDER BY p."createdAt" DESC
     `
-    const prompts: LegalPrompt[] = result.map(p => ({
-      ...p,
+    const prompts: LegalPrompt[] = (result as any[]).map((p) => ({
+      id: p.id as number,
+      name: p.name as string,
+      prompt: p.prompt as string,
+      category: p.category as string,
+      systemMessage: p.systemMessage as string | null,
+      status: (p.status as PromptStatus) || "draft",
+      owner: p.owner as string,
+      lastReviewedAt: p.lastReviewedAt as string | null,
+      latestVersion: Number.parseInt(p.latestVersion as string) || 1,
+      publishedVersion: Number.parseInt(p.publishedVersion as string) || 0,
+      createdAt: p.createdAt as string,
+      updatedAt: p.updatedAt as string | undefined,
       variables: p.prompt ? extractVariables(p.prompt as string) : [],
       usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false
-    })) as LegalPrompt[]
+      isFavorite: p.isFavorite || false,
+      metrics: {
+        adoptionCount: Number.parseInt(p.adoptionCount as string) || 0,
+        recentFailures: Number.parseInt(p.recentFailures as string) || 0,
+        lastUsedAt: p.lastUsedAt as string | null,
+      },
+    }))
 
-    console.log(`Fetched ${prompts.length} prompts from database`)
+    const filteredPrompts = applyPromptFilters(prompts, filters)
+    console.log(`Fetched ${filteredPrompts.length} prompts from database`)
 
-    return { prompts, error: null }
+    return { prompts: filteredPrompts, error: null }
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e))
     console.error("Failed to fetch prompts:", error)
-    const prompts: LegalPrompt[] = (fallbackPrompts as any[]).map((p, i) => ({
-      id: i + 1,
-      name: p.title,
-      prompt: p.prompt,
-      category: p.category,
-      systemMessage: null,
-      createdAt: new Date().toISOString(),
-      variables: [],
-      usageCount: 0,
-      isFavorite: false,
-    }))
+    const prompts: LegalPrompt[] = buildFallbackPrompts()
     console.log(`Using ${prompts.length} fallback prompts due to error`)
     return {
-      prompts,
+      prompts: applyPromptFilters(prompts, filters),
       error: `Failed to fetch prompts: ${error.message}`,
     }
   }
 }
 
 export async function getPromptById(id: number): Promise<LegalPrompt | undefined> {
-  try {
-    const result = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
-      FROM legalprompt
-      WHERE id = ${id}
-    `
-    if (result.length === 0) return undefined
-    const p = result[0]
-    return {
-      ...p,
-      variables: p.prompt ? extractVariables(p.prompt as string) : [],
-      usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false
-    } as LegalPrompt | undefined
-  } catch (e: unknown) {
-    const error = e instanceof Error ? e : new Error(String(e))
-    console.error(`Failed to fetch prompt by ID ${id}:`, error)
-    throw new Error(`Failed to fetch prompt by ID ${id}: ${error.message}`)
-  }
+  const prompt = await getLegalPromptById(id)
+  return prompt ?? undefined
 }
 
 
@@ -153,9 +179,21 @@ export async function getLegalPrompts(options?: {
 export async function getLegalPromptById(id: number): Promise<LegalPrompt | null> {
   try {
     const results = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
-      FROM legalprompt 
-      WHERE id = ${id}
+      SELECT p.id, p.name, p.prompt, p.category, p."systemMessage", p."createdAt", p."updatedAt",
+             p.status, p.owner, p."lastReviewedAt", p."latestVersion", p."publishedVersion",
+             COALESCE(u.adoption_count, 0) AS "adoptionCount",
+             COALESCE(u.recent_failures, 0) AS "recentFailures",
+             u.last_used_at AS "lastUsedAt"
+      FROM legalprompt p
+      LEFT JOIN (
+        SELECT "promptId", 
+               COUNT(*) FILTER (WHERE result = 'success') AS adoption_count,
+               COUNT(*) FILTER (WHERE result = 'failure' AND "createdAt" > NOW() - INTERVAL '30 days') AS recent_failures,
+               MAX("createdAt") AS last_used_at
+        FROM prompt_usage_logs
+        GROUP BY "promptId"
+      ) u ON u."promptId" = p.id
+      WHERE p.id = ${id}
     `
 
     if (results.length === 0) {
@@ -164,6 +202,7 @@ export async function getLegalPromptById(id: number): Promise<LegalPrompt | null
 
     const p = results[0]
     const variables = p.prompt ? extractVariables(p.prompt as string) : []
+    const versionsResult = await getPromptVersions(id)
 
     const legalPrompt: LegalPrompt = {
       id: p.id as number,
@@ -171,11 +210,22 @@ export async function getLegalPromptById(id: number): Promise<LegalPrompt | null
       prompt: p.prompt as string,
       category: p.category as string,
       systemMessage: p.systemMessage as string | null,
+      status: (p.status as PromptStatus) || "draft",
+      owner: p.owner as string,
+      lastReviewedAt: p.lastReviewedAt as string | null,
+      latestVersion: Number.parseInt(p.latestVersion as string) || 1,
+      publishedVersion: Number.parseInt(p.publishedVersion as string) || 0,
       createdAt: p.createdAt as string,
       updatedAt: p.updatedAt as string | undefined,
       variables,
       usageCount: p.usageCount || 0,
       isFavorite: p.isFavorite || false,
+      metrics: {
+        adoptionCount: Number.parseInt(p.adoptionCount as string) || 0,
+        recentFailures: Number.parseInt(p.recentFailures as string) || 0,
+        lastUsedAt: p.lastUsedAt as string | null,
+      },
+      versions: versionsResult.versions || [],
     }
     return legalPrompt
   } catch (e: unknown) {
@@ -236,7 +286,7 @@ export async function createLegalPrompt(
 
     const sanitizedData = {
       name: sanitizeInput(data.name),
-      prompt: data.prompt, 
+      prompt: data.prompt,
       category: sanitizeInput(data.category),
       systemMessage: data.systemMessage ? data.systemMessage : null,
     }
@@ -246,19 +296,28 @@ export async function createLegalPrompt(
       VALUES (${sanitizedData.name}, ${sanitizedData.prompt}, ${sanitizedData.category}, ${sanitizedData.systemMessage})
       RETURNING id, name, prompt, category, "systemMessage", "createdAt"
     `
-    
+
     const newPrompt = result[0]
 
+    await sql`
+      INSERT INTO prompt_versions ("promptId", "versionNumber", prompt, "systemMessage", status, "createdBy", "diffSummary")
+      VALUES (${newPrompt.id}, 1, ${sanitizedData.prompt}, ${sanitizedData.systemMessage ?? null}, 'draft', 'system', 'Initial version')
+    `
+
     revalidatePath("/")
-    return { 
-      success: true, 
-      data: { 
+    revalidatePath("/prompts")
+    return {
+      success: true,
+      data: {
         id: newPrompt.id as number,
         name: newPrompt.name as string,
         prompt: newPrompt.prompt as string,
         category: newPrompt.category as string,
         systemMessage: newPrompt.systemMessage as string | null,
         createdAt: newPrompt.createdAt as string,
+        status: "draft",
+        latestVersion: 1,
+        publishedVersion: 0,
         variables: extractVariables(newPrompt.prompt as string),
         usageCount: 0,
         isFavorite: false
@@ -321,8 +380,8 @@ export async function updateLegalPrompt(
 ): Promise<{ success: boolean; data?: LegalPrompt; error?: PromptError }> {
   try {
     const currentResults = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt" 
-      FROM legalprompt 
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", status, owner, "latestVersion", "publishedVersion", "lastReviewedAt"
+      FROM legalprompt
       WHERE id = ${id}
     `
 
@@ -373,24 +432,33 @@ export async function updateLegalPrompt(
       systemMessage: updatedData.systemMessage,
     }
 
+    const nextVersion = (Number.parseInt(current.latestVersion as string) || 1) + 1
+
     const result = await sql`
       UPDATE legalprompt
       SET name = ${sanitizedData.name},
           prompt = ${sanitizedData.prompt},
           category = ${sanitizedData.category},
           "systemMessage" = ${sanitizedData.systemMessage},
+          status = 'review',
+          "latestVersion" = ${nextVersion},
           "updatedAt" = NOW()
       WHERE id = ${id}
       RETURNING id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
     `
 
     console.log(`Updated prompt ${id}`, result[0])
-    
+
+    await sql`
+      INSERT INTO prompt_versions ("promptId", "versionNumber", prompt, "systemMessage", status, "createdBy", "diffSummary")
+      VALUES (${id}, ${nextVersion}, ${sanitizedData.prompt}, ${sanitizedData.systemMessage ?? null}, 'review', ${current.owner ?? "system"}, 'Automated version from updateLegalPrompt')
+    `
+
     const updatedPrompt = result[0]
 
     revalidatePath("/")
     revalidatePath(`/prompts/${id}`)
-    return { 
+    return {
       success: true, 
       data: {
         id: updatedPrompt.id as number,
@@ -678,27 +746,186 @@ export async function deleteTag(tag: string): Promise<{ success: boolean; error?
 
 export async function getPromptVersions(promptId: number): Promise<{
   success: boolean
-  versions?: any[]
+  versions?: PromptVersionDetails[]
   error?: string
 }> {
-  // Mock implementation
-  return {
-    success: true,
-    versions: [
-      // Mock data
-    ],
+  try {
+    if (!process.env["DATABASE_URL"]) {
+      return { success: true, versions: buildFallbackVersions(promptId) }
+    }
+
+    const results = await sql`
+      SELECT id, "versionNumber", prompt, "systemMessage", status, "createdBy", "diffSummary", "reviewedBy", "reviewedAt", "createdAt"
+      FROM prompt_versions
+      WHERE "promptId" = ${promptId}
+      ORDER BY "versionNumber" DESC
+    `
+
+    const versions = (results as any[]).map(mapVersionRow)
+
+    return { success: true, versions }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error(`Error fetching prompt versions for ${promptId}:`, error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function createPromptVersion(
+  promptId: number,
+  data: {
+    prompt: string
+    systemMessage?: string | null
+    createdBy?: string
+    diffSummary?: string
+    status?: PromptStatus
+  },
+): Promise<{ success: boolean; version?: PromptVersionDetails; error?: string }> {
+  if (!process.env["DATABASE_URL"]) {
+    return { success: false, error: "Database connection not configured" }
+  }
+
+  try {
+    const currentRows = await sql`SELECT "latestVersion" FROM legalprompt WHERE id = ${promptId}`
+    if (currentRows.length === 0) {
+      return { success: false, error: `Prompt with ID ${promptId} not found` }
+    }
+
+    const nextVersion = Number.parseInt(currentRows[0].latestVersion as string) + 1
+    const createdBy = data.createdBy || "system"
+    const status: PromptStatus = data.status || "draft"
+    const insertResult = await sql`
+      INSERT INTO prompt_versions ("promptId", "versionNumber", prompt, "systemMessage", status, "createdBy", "diffSummary")
+      VALUES (${promptId}, ${nextVersion}, ${data.prompt}, ${data.systemMessage ?? null}, ${status}, ${createdBy}, ${data.diffSummary ?? null})
+      RETURNING id, "versionNumber", prompt, "systemMessage", status, "createdBy", "diffSummary", "reviewedBy", "reviewedAt", "createdAt"
+    `
+
+    await sql`
+      UPDATE legalprompt
+      SET prompt = ${data.prompt},
+          "systemMessage" = ${data.systemMessage ?? null},
+          status = ${status === "published" ? "review" : status},
+          "latestVersion" = ${nextVersion},
+          "updatedAt" = NOW()
+      WHERE id = ${promptId}
+    `
+
+    revalidatePath(`/prompts/${promptId}`)
+    revalidatePath("/prompts")
+
+    return { success: true, version: mapVersionRow(insertResult[0]) }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error(`Error creating prompt version for ${promptId}:`, error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function publishPromptVersion(
+  promptId: number,
+  versionNumber: number,
+  reviewer?: string,
+): Promise<{ success: boolean; version?: PromptVersionDetails; error?: string }> {
+  if (!process.env["DATABASE_URL"]) {
+    return { success: false, error: "Database connection not configured" }
+  }
+
+  try {
+    const versionRows = await sql`
+      SELECT id, "versionNumber", prompt, "systemMessage", status, "createdBy", "diffSummary", "reviewedBy", "reviewedAt", "createdAt"
+      FROM prompt_versions
+      WHERE "promptId" = ${promptId} AND "versionNumber" = ${versionNumber}
+    `
+
+    if (versionRows.length === 0) {
+      return { success: false, error: `Version ${versionNumber} not found for prompt ${promptId}` }
+    }
+
+    const versionRow = versionRows[0]
+
+    await sql`
+      UPDATE legalprompt
+      SET prompt = ${versionRow.prompt},
+          "systemMessage" = ${versionRow.systemMessage ?? null},
+          status = 'published',
+          "publishedVersion" = ${versionNumber},
+          "latestVersion" = GREATEST("latestVersion", ${versionNumber}),
+          "lastReviewedAt" = NOW(),
+          "updatedAt" = NOW()
+      WHERE id = ${promptId}
+    `
+
+    const reviewedAt = new Date().toISOString()
+
+    await sql`
+      UPDATE prompt_versions
+      SET status = 'published',
+          "reviewedBy" = ${reviewer ?? "reviewer"},
+          "reviewedAt" = ${reviewedAt}
+      WHERE id = ${versionRow.id}
+    `
+
+    revalidatePath(`/prompts/${promptId}`)
+    revalidatePath("/prompts")
+
+    const publishedVersion = {
+      ...versionRow,
+      status: "published",
+      reviewedBy: reviewer ?? "reviewer",
+      reviewedAt,
+    }
+
+    return { success: true, version: mapVersionRow(publishedVersion) }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error(`Error publishing version ${versionNumber} for prompt ${promptId}:`, error)
+    return { success: false, error: error.message }
   }
 }
 
 export async function restorePromptVersion(
   promptId: number,
-  versionId: number,
+  versionNumber: number,
 ): Promise<{
   success: boolean
   error?: string
 }> {
-  // Mock implementation
-  return { success: true }
+  if (!process.env["DATABASE_URL"]) {
+    return { success: false, error: "Database connection not configured" }
+  }
+
+  try {
+    const versionRows = await sql`
+      SELECT id, prompt, "systemMessage", "versionNumber"
+      FROM prompt_versions
+      WHERE "promptId" = ${promptId} AND "versionNumber" = ${versionNumber}
+    `
+
+    if (versionRows.length === 0) {
+      return { success: false, error: `Version ${versionNumber} not found for prompt ${promptId}` }
+    }
+
+    const versionRow = versionRows[0]
+
+    await sql`
+      UPDATE legalprompt
+      SET prompt = ${versionRow.prompt},
+          "systemMessage" = ${versionRow.systemMessage ?? null},
+          status = 'review',
+          "publishedVersion" = ${versionRow.versionNumber},
+          "updatedAt" = NOW()
+      WHERE id = ${promptId}
+    `
+
+    revalidatePath(`/prompts/${promptId}`)
+    revalidatePath("/prompts")
+
+    return { success: true }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error(`Error restoring version ${versionNumber} for prompt ${promptId}:`, error)
+    return { success: false, error: error.message }
+  }
 }
 
 export async function testPrompt(content: string, variables: Record<string, string>) {
@@ -738,6 +965,92 @@ export async function getPromptAnalytics(
     data: {
       // Mock data
     },
+  }
+}
+
+function applyPromptFilters(
+  prompts: LegalPrompt[],
+  filters?: { status?: PromptStatus; category?: string; owner?: string },
+): LegalPrompt[] {
+  if (!filters) return prompts
+
+  return prompts.filter((prompt) => {
+    const statusMatch = filters.status ? prompt.status === filters.status : true
+    const categoryMatch = filters.category ? prompt.category === filters.category : true
+    const ownerMatch = filters.owner ? prompt.owner === filters.owner : true
+    return statusMatch && categoryMatch && ownerMatch
+  })
+}
+
+function buildFallbackVersions(promptId: number): PromptVersionDetails[] {
+  return [
+    {
+      id: promptId * 1000 + 1,
+      versionNumber: 2,
+      prompt: "Updated draft prompt body for offline mode",
+      systemMessage: null,
+      status: "review",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+      createdBy: "offline-tester",
+      diffSummary: "Adjusted clarity and added constraints",
+      reviewedBy: null,
+      reviewedAt: null,
+    },
+    {
+      id: promptId * 1000,
+      versionNumber: 1,
+      prompt: "Initial version of the prompt (offline fallback)",
+      systemMessage: null,
+      status: "published",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+      createdBy: "system",
+      diffSummary: "Baseline version",
+      reviewedBy: "qa@example.com",
+      reviewedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
+    },
+  ]
+}
+
+function buildFallbackPrompts(): LegalPrompt[] {
+  return (fallbackPrompts as any[]).map((p, i) => {
+    const versions = buildFallbackVersions(i + 1)
+    return {
+      id: i + 1,
+      name: p.title,
+      prompt: p.prompt,
+      category: p.category,
+      systemMessage: null,
+      status: "review",
+      owner: "unassigned",
+      lastReviewedAt: versions[0]?.reviewedAt ?? null,
+      latestVersion: versions[0]?.versionNumber ?? 1,
+      publishedVersion: versions.find((v) => v.status === "published")?.versionNumber ?? 0,
+      createdAt: new Date().toISOString(),
+      variables: [],
+      usageCount: 0,
+      isFavorite: false,
+      metrics: {
+        adoptionCount: 5 + i,
+        recentFailures: i % 2,
+        lastUsedAt: new Date(Date.now() - 1000 * 60 * 60 * (i + 1)).toISOString(),
+      },
+      versions,
+    }
+  })
+}
+
+function mapVersionRow(row: any): PromptVersionDetails {
+  return {
+    id: row.id as number,
+    versionNumber: Number.parseInt(row.versionNumber as string) || 1,
+    prompt: row.prompt as string,
+    systemMessage: row.systemMessage as string | null,
+    status: (row.status as PromptStatus) || "draft",
+    createdAt: row.createdAt as string,
+    createdBy: row.createdBy as string,
+    diffSummary: row.diffSummary as string | null,
+    reviewedBy: row.reviewedBy as string | null,
+    reviewedAt: row.reviewedAt as string | null,
   }
 }
 
