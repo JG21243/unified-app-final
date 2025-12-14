@@ -67,6 +67,7 @@ export function PromptTesterStreaming({ promptId, prompt, systemMessage, variabl
         body: JSON.stringify({
           prompt: processedPrompt,
           systemMessage,
+          promptId,
         }),
         signal,
       })

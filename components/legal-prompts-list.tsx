@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition, useEffect, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { LegalPrompt } from "@/app/actions"
 import { getLegalPrompts, duplicateLegalPrompt, deleteLegalPrompt } from "@/app/actions";
@@ -126,7 +126,7 @@ export function LegalPromptsList({
   const searchParams = useSearchParams()
   const [prompts, setPrompts] = useState<LegalPrompt[]>(initialPrompts)
   const [total, setTotal] = useState<number>(initialTotal)
-  const [categories, setCategories] = useState<string[]>(initialCategories)
+  const [categories] = useState<string[]>(initialCategories)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedPrompts, setSelectedPrompts] = useState<number[]>([])
   const [sortOption, setSortOption] = useState<SortOption>("createdAt-desc")
@@ -146,7 +146,7 @@ export function LegalPromptsList({
   const totalPages = Math.ceil(total / promptsPerPage)
 
   // Apply search filters
-  const handleSearch = (filters: SearchFilters) => {
+  const handleSearch = useCallback((filters: SearchFilters) => {
     setIsLoading(true)
     setError(null)
 
@@ -212,10 +212,10 @@ export function LegalPromptsList({
         setIsLoading(false)
       }
     })
-  }
+  }, [favorites, promptsPerPage, router, showFavoritesOnly, startTransition])
 
   // Handle pagination
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     if (page === currentPage) return
 
     setIsLoading(true)
@@ -264,7 +264,7 @@ export function LegalPromptsList({
         setIsLoading(false)
       }
     })
-  }
+  }, [currentPage, favorites, promptsPerPage, searchParams, showFavoritesOnly, sortOption, startTransition])
 
   // Handle prompt selection
   const togglePromptSelection = (id: number) => {
@@ -291,7 +291,7 @@ export function LegalPromptsList({
   }
 
   // Update the toggleFavoritesFilter function to filter client-side when needed
-  const toggleFavoritesFilter = () => {
+  const toggleFavoritesFilter = useCallback(() => {
     const newState = !showFavoritesOnly
     setShowFavoritesOnly(newState)
 
@@ -316,7 +316,7 @@ export function LegalPromptsList({
       title: newState ? "Showing favorites only" : "Showing all prompts",
       duration: 3000,
     })
-  }
+  }, [favorites, handleSearch, prompts, searchParams, showFavoritesOnly, sortOption])
 
   // Handle duplicate
   const handleDuplicate = async (id: number) => {
@@ -426,7 +426,7 @@ export function LegalPromptsList({
         window.removeEventListener("keydown", handleKeyDown)
       }
     }
-  }, [currentPage, totalPages, showFavoritesOnly])
+  }, [currentPage, totalPages, showFavoritesOnly, handlePageChange, toggleFavoritesFilter])
 
   // Calculate pagination
 

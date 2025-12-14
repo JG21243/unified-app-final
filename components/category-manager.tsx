@@ -227,14 +227,14 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
       </Card>
 
       <AlertDialog open={deleteIndex !== null} onOpenChange={(open) => !open && setDeleteIndex(null)}>
-        <AlertDialogContent className="shadow-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will delete the category and move all associated prompts to "Uncategorized".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogContent className="shadow-lg">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will delete the category and move all associated prompts to &quot;Uncategorized&quot;.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteCategory} className="bg-destructive text-destructive-foreground">
               Delete

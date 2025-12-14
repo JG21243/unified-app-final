@@ -77,7 +77,7 @@ const WORKSPACES = [
 
 export function CollaborativeWorkspace() {
   const [activeWorkspace, setActiveWorkspace] = useState(WORKSPACES[0])
-  const [shareLink, setShareLink] = useState("https://legal-prompts.app/workspace/contract-templates")
+  const [shareLink] = useState("https://legal-prompts.app/workspace/contract-templates")
   const [copied, setCopied] = useState(false)
   const [isPublic, setIsPublic] = useState(activeWorkspace.visibility === "public")
 

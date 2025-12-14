@@ -51,7 +51,7 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
     }
 
     const result = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
       FROM legalprompt
       ORDER BY "createdAt" DESC
     `
@@ -59,7 +59,7 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
       ...p,
       variables: p.prompt ? extractVariables(p.prompt as string) : [],
       usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false
+      isFavorite: p.isFavorite || false,
     })) as LegalPrompt[]
 
     console.log(`Fetched ${prompts.length} prompts from database`)
@@ -90,7 +90,7 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
 export async function getPromptById(id: number): Promise<LegalPrompt | undefined> {
   try {
     const result = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
       FROM legalprompt
       WHERE id = ${id}
     `
@@ -100,7 +100,7 @@ export async function getPromptById(id: number): Promise<LegalPrompt | undefined
       ...p,
       variables: p.prompt ? extractVariables(p.prompt as string) : [],
       usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false
+      isFavorite: p.isFavorite || false,
     } as LegalPrompt | undefined
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e))
@@ -125,7 +125,7 @@ export async function getLegalPrompts(options?: {
     const offset = options?.offset || 0
 
     const result = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
       FROM legalprompt
       ORDER BY "createdAt" DESC
       LIMIT ${limit} OFFSET ${offset}
@@ -135,7 +135,7 @@ export async function getLegalPrompts(options?: {
       ...p,
       variables: p.prompt ? extractVariables(p.prompt as string) : [],
       usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false
+      isFavorite: p.isFavorite || false,
     })) as LegalPrompt[]
 
     const countResult = await sql`SELECT COUNT(*) as total FROM legalprompt`
@@ -153,8 +153,8 @@ export async function getLegalPrompts(options?: {
 export async function getLegalPromptById(id: number): Promise<LegalPrompt | null> {
   try {
     const results = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
-      FROM legalprompt 
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
+      FROM legalprompt
       WHERE id = ${id}
     `
 
@@ -321,8 +321,8 @@ export async function updateLegalPrompt(
 ): Promise<{ success: boolean; data?: LegalPrompt; error?: PromptError }> {
   try {
     const currentResults = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt" 
-      FROM legalprompt 
+      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
+      FROM legalprompt
       WHERE id = ${id}
     `
 
@@ -402,7 +402,7 @@ export async function updateLegalPrompt(
         updatedAt: updatedPrompt.updatedAt as string | undefined,
         variables: extractVariables(updatedPrompt.prompt as string),
         usageCount: current.usageCount || 0,
-        isFavorite: current.isFavorite || false
+        isFavorite: current.isFavorite || false,
       }
     }
   } catch (e: unknown) {
@@ -415,6 +415,44 @@ export async function updateLegalPrompt(
         code: "SERVER_ERROR",
       },
     }
+  }
+}
+
+export async function setPromptFavorite(
+  id: number,
+  isFavorite: boolean,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`
+      UPDATE legalprompt
+      SET "isFavorite" = ${isFavorite}
+      WHERE id = ${id}
+    `
+    revalidatePath("/prompts")
+    revalidatePath(`/prompts/${id}`)
+    return { success: true }
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error(`Error updating favorite state for prompt ${id}:`, error)
+    return {
+      success: false,
+      error: error.message,
+    }
+  }
+}
+
+export async function incrementPromptUsage(id: number): Promise<void> {
+  try {
+    await sql`
+      UPDATE legalprompt
+      SET "usageCount" = COALESCE("usageCount", 0) + 1
+      WHERE id = ${id}
+    `
+    revalidatePath("/prompts")
+    revalidatePath(`/prompts/${id}`)
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error(`Error incrementing usage for prompt ${id}:`, error)
   }
 }
 
@@ -656,8 +694,9 @@ export async function getPromptStats(): Promise<{
   }
 }
 
-export async function getPromptTags(promptId: number): Promise<string[]> {
+export async function getPromptTags(_promptId: number): Promise<string[]> {
   // Mock implementation
+  void _promptId
   return []
 }
 
@@ -666,22 +705,25 @@ export async function getAllTags(): Promise<string[]> {
   return ["contract", "legal-analysis", "client-advice", "research", "litigation", "corporate"]
 }
 
-export async function createTag(tag: string): Promise<{ success: boolean; error?: string }> {
+export async function createTag(_tag: string): Promise<{ success: boolean; error?: string }> {
   // Mock implementation
+  void _tag
   return { success: true }
 }
 
-export async function deleteTag(tag: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteTag(_tag: string): Promise<{ success: boolean; error?: string }> {
   // Mock implementation
+  void _tag
   return { success: true }
 }
 
-export async function getPromptVersions(promptId: number): Promise<{
+export async function getPromptVersions(_promptId: number): Promise<{
   success: boolean
   versions?: any[]
   error?: string
 }> {
   // Mock implementation
+  void _promptId
   return {
     success: true,
     versions: [
@@ -691,13 +733,15 @@ export async function getPromptVersions(promptId: number): Promise<{
 }
 
 export async function restorePromptVersion(
-  promptId: number,
-  versionId: number,
+  _promptId: number,
+  _versionId: number,
 ): Promise<{
   success: boolean
   error?: string
 }> {
   // Mock implementation
+  void _promptId
+  void _versionId
   return { success: true }
 }
 
@@ -725,14 +769,16 @@ export async function savePromptTest(testResult: any): Promise<{
 }
 
 export async function getPromptAnalytics(
-  promptId: number,
-  timeRange: string,
+  _promptId: number,
+  _timeRange: string,
 ): Promise<{
   success: boolean
   data?: any
   error?: string
 }> {
   // Mock implementation
+  void _promptId
+  void _timeRange
   return {
     success: true,
     data: {

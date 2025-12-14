@@ -39,7 +39,6 @@ export function PromptFilters({
   const [localSelectedCategories, setLocalSelectedCategories] = useState<string[]>(selectedCategories)
   const [localSelectedTags, setLocalSelectedTags] = useState<string[]>(selectedTags)
   const [selectedCategoriesState, setSelectedCategories] = useState<string[]>(selectedCategories)
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
   useEffect(() => {
     setLocalSelectedCategories(selectedCategories)
@@ -87,24 +86,6 @@ export function PromptFilters({
     setLocalSelectedTags([])
     onCategoryChange([])
     onTagChange([])
-  }
-
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    setDateRange(range)
-
-    // Format dates as ISO strings for the database query
-    const formattedRange = range
-      ? {
-          from: range.from ? range.from.toISOString() : undefined,
-          to: range.to ? range.to.toISOString() : undefined,
-        }
-      : undefined
-
-    // Make sure we're passing the updated date range to the parent component
-    onFilterChange({
-      ...filters,
-      dateRange: formattedRange,
-    })
   }
 
   return (
@@ -204,10 +185,5 @@ export function PromptFilters({
       )}
     </div>
   )
-}
-
-interface DateRange {
-  from?: Date
-  to?: Date
 }
 

@@ -34,11 +34,12 @@ export function PromptActions({ promptId, promptName }: PromptActionsProps) {
       // await deletePrompt(promptId)
       toast({
         title: "Prompt deleted",
-        description: `${promptName} has been deleted.`,
+        description: `${promptName} (ID: ${promptId}) has been deleted.`,
       })
       router.push("/prompts")
       router.refresh()
     } catch (error) {
+      console.error("Failed to delete prompt", error)
       toast({
         title: "Error",
         description: "Failed to delete prompt. Please try again.",
@@ -56,10 +57,11 @@ export function PromptActions({ promptId, promptName }: PromptActionsProps) {
       // await duplicatePrompt(promptId)
       toast({
         title: "Prompt duplicated",
-        description: `A copy of ${promptName} has been created.`,
+        description: `A copy of ${promptName} (ID: ${promptId}) has been created.`,
       })
       router.refresh()
     } catch (error) {
+      console.error("Failed to duplicate prompt", error)
       toast({
         title: "Error",
         description: "Failed to duplicate prompt. Please try again.",
@@ -94,12 +96,12 @@ export function PromptActions({ promptId, promptName }: PromptActionsProps) {
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the prompt "{promptName}". This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete the prompt &quot;{promptName}&quot;. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction

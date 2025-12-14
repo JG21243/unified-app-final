@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server"
 import OpenAI from "openai"
 
+import { incrementPromptUsage } from "@/app/actions"
+
 export const runtime = "nodejs"
 
 /**
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     // Parse the request body
     const promptData = await req.json()
-    const { prompt, systemMessage } = promptData
+    const { prompt, systemMessage, promptId } = promptData
 
     // Validate the request
     if (!prompt) {
@@ -71,6 +73,10 @@ export async function POST(req: NextRequest) {
       messages,
       stream: false, // Set to false to get a regular response
     })
+
+    if (promptId) {
+      void incrementPromptUsage(Number.parseInt(String(promptId)))
+    }
 
     // Return the response
     return new Response(

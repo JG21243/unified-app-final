@@ -58,7 +58,7 @@ interface VersionHistoryProps {
   onClose?: () => void
 }
 
-export function VersionHistory({ promptId, onClose }: VersionHistoryProps) {
+export function VersionHistory({ onClose }: VersionHistoryProps) {
   const [selectedVersion, setSelectedVersion] = useState(VERSION_HISTORY[0])
   const [isRestoring, setIsRestoring] = useState(false)
 

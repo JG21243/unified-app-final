@@ -50,7 +50,6 @@ export function PromptTestingInterface({ prompt }: PromptTestingInterfaceProps) 
   const [testResult, setTestResult] = useState<TestResult | null>(null)
   const [useSystemMessage, setUseSystemMessage] = useState(true)
   const [recentTests, setRecentTests] = useState<TestResult[]>([])
-  const [isLoadingTests, setIsLoadingTests] = useState(false)
 
   // Extract variables from the prompt
   useEffect(() => {
@@ -90,7 +89,7 @@ export function PromptTestingInterface({ prompt }: PromptTestingInterfaceProps) 
       const finalPromptText = generateFinalPrompt()
 
       // Check if any variables are empty
-      const emptyVars = Object.entries(variableValues).filter(([_, value]) => !value)
+    const emptyVars = Object.entries(variableValues).filter(([, value]) => !value)
       if (emptyVars.length > 0) {
         toast({
           title: "Warning",
