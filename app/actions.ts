@@ -5,6 +5,11 @@ import { redirect } from "next/navigation"
 import type { z } from "zod"
 
 import { sql } from "@/lib/db"
+import {
+  normalizePromptRow,
+  runPromptQuery,
+  type PromptRow,
+} from "@/lib/prompt-metadata"
 import { promptSchema } from "@/lib/validations/prompt"
 import { sanitizeInput } from "@/lib/validation-utils"
 import fallbackPrompts from "@/scripts/prompts-data.json"
@@ -28,23 +33,6 @@ export type PromptError = {
   code?: string
 }
 
-type PromptRow = Record<string, unknown>
-
-function isMissingColumnError(error: unknown, column: string): boolean {
-  if (!error || typeof error !== "object") {
-    return false
-  }
-  const err = error as { code?: string; message?: string }
-  if (err.code === "42703") {
-    return true
-  }
-  return Boolean(err.message?.includes(`column "${column}" does not exist`))
-}
-
-function isMissingPromptMetadataColumns(error: unknown): boolean {
-  return isMissingColumnError(error, "usageCount") || isMissingColumnError(error, "isFavorite")
-}
-
 async function ensurePromptMetadataColumns(): Promise<void> {
   try {
     await sql`
@@ -57,34 +45,6 @@ async function ensurePromptMetadataColumns(): Promise<void> {
     `
   } catch (error) {
     console.warn("Unable to ensure prompt metadata columns:", error)
-  }
-}
-
-async function runPromptQuery<T>(primary: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
-  try {
-    return await primary()
-  } catch (error) {
-    if (isMissingPromptMetadataColumns(error)) {
-      console.warn("Prompt metadata columns missing; attempting to add them.")
-      await ensurePromptMetadataColumns()
-      try {
-        return await primary()
-      } catch (retryError) {
-        if (isMissingPromptMetadataColumns(retryError)) {
-          console.warn("Prompt metadata columns still missing; falling back to base query.")
-          return await fallback()
-        }
-        throw retryError
-      }
-    }
-    throw error
-  }
-}
-
-function normalizePromptRow(row: PromptRow): { usageCount: number; isFavorite: boolean } {
-  return {
-    usageCount: Number(row.usageCount ?? 0),
-    isFavorite: Boolean(row.isFavorite ?? false),
   }
 }
 
@@ -110,18 +70,19 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
       return { prompts, error: "Database connection not configured" }
     }
 
-    const result = await runPromptQuery(
-      () => sql`
+    const result = await runPromptQuery({
+      primary: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
         FROM legalprompt
         ORDER BY "createdAt" DESC
       `,
-      () => sql`
+      fallback: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
         FROM legalprompt
         ORDER BY "createdAt" DESC
       `,
-    )
+      ensureColumns: ensurePromptMetadataColumns,
+    })
     const prompts: LegalPrompt[] = result.map((row) => {
       const normalized = normalizePromptRow(row as PromptRow)
       return {
@@ -159,18 +120,19 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
 
 export async function getPromptById(id: number): Promise<LegalPrompt | undefined> {
   try {
-    const result = await runPromptQuery(
-      () => sql`
+    const result = await runPromptQuery({
+      primary: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
         FROM legalprompt
         WHERE id = ${id}
       `,
-      () => sql`
+      fallback: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
         FROM legalprompt
         WHERE id = ${id}
       `,
-    )
+      ensureColumns: ensurePromptMetadataColumns,
+    })
     if (result.length === 0) return undefined
     const p = result[0] as PromptRow
     const normalized = normalizePromptRow(p)
@@ -202,20 +164,21 @@ export async function getLegalPrompts(options?: {
     const limit = options?.limit || 10
     const offset = options?.offset || 0
 
-    const result = await runPromptQuery(
-      () => sql`
+    const result = await runPromptQuery({
+      primary: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
         FROM legalprompt
         ORDER BY "createdAt" DESC
         LIMIT ${limit} OFFSET ${offset}
       `,
-      () => sql`
+      fallback: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
         FROM legalprompt
         ORDER BY "createdAt" DESC
         LIMIT ${limit} OFFSET ${offset}
       `,
-    )
+      ensureColumns: ensurePromptMetadataColumns,
+    })
 
     const prompts: LegalPrompt[] = result.map((row) => {
       const normalized = normalizePromptRow(row as PromptRow)
@@ -241,18 +204,19 @@ export async function getLegalPrompts(options?: {
 
 export async function getLegalPromptById(id: number): Promise<LegalPrompt | null> {
   try {
-    const results = await runPromptQuery(
-      () => sql`
+    const results = await runPromptQuery({
+      primary: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
         FROM legalprompt
         WHERE id = ${id}
       `,
-      () => sql`
+      fallback: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
         FROM legalprompt
         WHERE id = ${id}
       `,
-    )
+      ensureColumns: ensurePromptMetadataColumns,
+    })
 
     if (results.length === 0) {
       return null
@@ -417,18 +381,19 @@ export async function updateLegalPrompt(
   data: Partial<z.infer<typeof promptSchema>>,
 ): Promise<{ success: boolean; data?: LegalPrompt; error?: PromptError }> {
   try {
-    const currentResults = await runPromptQuery(
-      () => sql`
+    const currentResults = await runPromptQuery({
+      primary: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
         FROM legalprompt
         WHERE id = ${id}
       `,
-      () => sql`
+      fallback: () => sql`
         SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
         FROM legalprompt
         WHERE id = ${id}
       `,
-    )
+      ensureColumns: ensurePromptMetadataColumns,
+    })
 
     if (currentResults.length === 0) {
       return {
