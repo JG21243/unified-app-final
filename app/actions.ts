@@ -45,13 +45,37 @@ function isMissingPromptMetadataColumns(error: unknown): boolean {
   return isMissingColumnError(error, "usageCount") || isMissingColumnError(error, "isFavorite")
 }
 
+async function ensurePromptMetadataColumns(): Promise<void> {
+  try {
+    await sql`
+      ALTER TABLE legalprompt
+      ADD COLUMN IF NOT EXISTS "usageCount" integer DEFAULT 0 NOT NULL
+    `
+    await sql`
+      ALTER TABLE legalprompt
+      ADD COLUMN IF NOT EXISTS "isFavorite" boolean DEFAULT false NOT NULL
+    `
+  } catch (error) {
+    console.warn("Unable to ensure prompt metadata columns:", error)
+  }
+}
+
 async function runPromptQuery<T>(primary: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
   try {
     return await primary()
   } catch (error) {
     if (isMissingPromptMetadataColumns(error)) {
-      console.warn("Prompt metadata columns missing; falling back to base query.")
-      return await fallback()
+      console.warn("Prompt metadata columns missing; attempting to add them.")
+      await ensurePromptMetadataColumns()
+      try {
+        return await primary()
+      } catch (retryError) {
+        if (isMissingPromptMetadataColumns(retryError)) {
+          console.warn("Prompt metadata columns still missing; falling back to base query.")
+          return await fallback()
+        }
+        throw retryError
+      }
     }
     throw error
   }
