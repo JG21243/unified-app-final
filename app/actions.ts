@@ -5,6 +5,11 @@ import { redirect } from "next/navigation"
 import type { z } from "zod"
 
 import { sql } from "@/lib/db"
+import {
+  normalizePromptRow,
+  runPromptQuery,
+  type PromptRow,
+} from "@/lib/prompt-metadata"
 import { promptSchema } from "@/lib/validations/prompt"
 import { sanitizeInput } from "@/lib/validation-utils"
 import fallbackPrompts from "@/scripts/prompts-data.json"
@@ -26,6 +31,21 @@ export type PromptError = {
   message: string
   errors?: Record<string, string> // For Zod field errors, string array might be more direct from .flatten()
   code?: string
+}
+
+async function ensurePromptMetadataColumns(): Promise<void> {
+  try {
+    await sql`
+      ALTER TABLE legalprompt
+      ADD COLUMN IF NOT EXISTS "usageCount" integer DEFAULT 0 NOT NULL
+    `
+    await sql`
+      ALTER TABLE legalprompt
+      ADD COLUMN IF NOT EXISTS "isFavorite" boolean DEFAULT false NOT NULL
+    `
+  } catch (error) {
+    console.warn("Unable to ensure prompt metadata columns:", error)
+  }
 }
 
 export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: string | null }> {
@@ -50,17 +70,28 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
       return { prompts, error: "Database connection not configured" }
     }
 
-    const result = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
-      FROM legalprompt
-      ORDER BY "createdAt" DESC
-    `
-    const prompts: LegalPrompt[] = result.map(p => ({
-      ...p,
-      variables: p.prompt ? extractVariables(p.prompt as string) : [],
-      usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false,
-    })) as LegalPrompt[]
+    const result = await runPromptQuery({
+      primary: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
+        FROM legalprompt
+        ORDER BY "createdAt" DESC
+      `,
+      fallback: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+        FROM legalprompt
+        ORDER BY "createdAt" DESC
+      `,
+      ensureColumns: ensurePromptMetadataColumns,
+    })
+    const prompts: LegalPrompt[] = result.map((row) => {
+      const normalized = normalizePromptRow(row as PromptRow)
+      return {
+        ...row,
+        variables: row.prompt ? extractVariables(row.prompt as string) : [],
+        usageCount: normalized.usageCount,
+        isFavorite: normalized.isFavorite,
+      }
+    }) as LegalPrompt[]
 
     console.log(`Fetched ${prompts.length} prompts from database`)
 
@@ -89,18 +120,27 @@ export async function getPrompts(): Promise<{ prompts: LegalPrompt[]; error: str
 
 export async function getPromptById(id: number): Promise<LegalPrompt | undefined> {
   try {
-    const result = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
-      FROM legalprompt
-      WHERE id = ${id}
-    `
+    const result = await runPromptQuery({
+      primary: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
+        FROM legalprompt
+        WHERE id = ${id}
+      `,
+      fallback: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+        FROM legalprompt
+        WHERE id = ${id}
+      `,
+      ensureColumns: ensurePromptMetadataColumns,
+    })
     if (result.length === 0) return undefined
-    const p = result[0]
+    const p = result[0] as PromptRow
+    const normalized = normalizePromptRow(p)
     return {
       ...p,
       variables: p.prompt ? extractVariables(p.prompt as string) : [],
-      usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false,
+      usageCount: normalized.usageCount,
+      isFavorite: normalized.isFavorite,
     } as LegalPrompt | undefined
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e))
@@ -124,19 +164,31 @@ export async function getLegalPrompts(options?: {
     const limit = options?.limit || 10
     const offset = options?.offset || 0
 
-    const result = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
-      FROM legalprompt
-      ORDER BY "createdAt" DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `
+    const result = await runPromptQuery({
+      primary: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
+        FROM legalprompt
+        ORDER BY "createdAt" DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `,
+      fallback: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+        FROM legalprompt
+        ORDER BY "createdAt" DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `,
+      ensureColumns: ensurePromptMetadataColumns,
+    })
 
-    const prompts: LegalPrompt[] = result.map(p => ({
-      ...p,
-      variables: p.prompt ? extractVariables(p.prompt as string) : [],
-      usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false,
-    })) as LegalPrompt[]
+    const prompts: LegalPrompt[] = result.map((row) => {
+      const normalized = normalizePromptRow(row as PromptRow)
+      return {
+        ...row,
+        variables: row.prompt ? extractVariables(row.prompt as string) : [],
+        usageCount: normalized.usageCount,
+        isFavorite: normalized.isFavorite,
+      }
+    }) as LegalPrompt[]
 
     const countResult = await sql`SELECT COUNT(*) as total FROM legalprompt`
     const total = Number.parseInt(countResult[0].total as string)
@@ -152,18 +204,27 @@ export async function getLegalPrompts(options?: {
 
 export async function getLegalPromptById(id: number): Promise<LegalPrompt | null> {
   try {
-    const results = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
-      FROM legalprompt
-      WHERE id = ${id}
-    `
+    const results = await runPromptQuery({
+      primary: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
+        FROM legalprompt
+        WHERE id = ${id}
+      `,
+      fallback: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+        FROM legalprompt
+        WHERE id = ${id}
+      `,
+      ensureColumns: ensurePromptMetadataColumns,
+    })
 
     if (results.length === 0) {
       return null
     }
 
-    const p = results[0]
+    const p = results[0] as PromptRow
     const variables = p.prompt ? extractVariables(p.prompt as string) : []
+    const normalized = normalizePromptRow(p)
 
     const legalPrompt: LegalPrompt = {
       id: p.id as number,
@@ -174,8 +235,8 @@ export async function getLegalPromptById(id: number): Promise<LegalPrompt | null
       createdAt: p.createdAt as string,
       updatedAt: p.updatedAt as string | undefined,
       variables,
-      usageCount: p.usageCount || 0,
-      isFavorite: p.isFavorite || false,
+      usageCount: normalized.usageCount,
+      isFavorite: normalized.isFavorite,
     }
     return legalPrompt
   } catch (e: unknown) {
@@ -320,11 +381,19 @@ export async function updateLegalPrompt(
   data: Partial<z.infer<typeof promptSchema>>,
 ): Promise<{ success: boolean; data?: LegalPrompt; error?: PromptError }> {
   try {
-    const currentResults = await sql`
-      SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
-      FROM legalprompt
-      WHERE id = ${id}
-    `
+    const currentResults = await runPromptQuery({
+      primary: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt", "usageCount", "isFavorite"
+        FROM legalprompt
+        WHERE id = ${id}
+      `,
+      fallback: () => sql`
+        SELECT id, name, prompt, category, "systemMessage", "createdAt", "updatedAt"
+        FROM legalprompt
+        WHERE id = ${id}
+      `,
+      ensureColumns: ensurePromptMetadataColumns,
+    })
 
     if (currentResults.length === 0) {
       return {
@@ -336,7 +405,8 @@ export async function updateLegalPrompt(
       }
     }
 
-    const current = currentResults[0]
+    const current = currentResults[0] as PromptRow
+    const normalized = normalizePromptRow(current)
 
     const updatedData = {
       name: data.name !== undefined ? data.name : current.name as string,
@@ -401,8 +471,8 @@ export async function updateLegalPrompt(
         createdAt: updatedPrompt.createdAt as string,
         updatedAt: updatedPrompt.updatedAt as string | undefined,
         variables: extractVariables(updatedPrompt.prompt as string),
-        usageCount: current.usageCount || 0,
-        isFavorite: current.isFavorite || false,
+        usageCount: normalized.usageCount,
+        isFavorite: normalized.isFavorite,
       }
     }
   } catch (e: unknown) {
@@ -786,4 +856,3 @@ export async function getPromptAnalytics(
     },
   }
 }
-
