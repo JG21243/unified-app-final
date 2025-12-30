@@ -16,5 +16,5 @@ export const INITIAL_MESSAGE = `Hi! How can I assist you today?`;
 
 export const defaultVectorStore = {
   id: "", // Default vector store ID, can be replaced by user's selection
-  name: "Example", // Default vector store name
+  name: "", // Populated once a store is linked
 };
