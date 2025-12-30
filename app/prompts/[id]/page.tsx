@@ -1,8 +1,8 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { AlertTriangle, Pencil, MessageSquare } from "lucide-react"
+import { AlertTriangle, Pencil, MessageSquare, Star, Activity } from "lucide-react"
 
-import { getLegalPromptById, getPromptTags } from "@/app/actions"
+import { getLegalPromptById, getPromptTags, setPromptFavorite } from "@/app/actions"
 import { Button } from "@/components/ui/button"
 import { PageContainer } from "@/components/layout/page-container"
 import { PageHeader } from "@/components/layout/page-header"
@@ -53,6 +53,11 @@ async function PromptDataView({ promptId }: { promptId: number }) {
     const tags = await getPromptTags(promptId);
     const variables = prompt.variables || [];
 
+    const toggleFavorite = async () => {
+      "use server"
+      await setPromptFavorite(promptId, !prompt.isFavorite)
+    }
+
     return (
       <>
         <PageHeader
@@ -61,6 +66,10 @@ async function PromptDataView({ promptId }: { promptId: number }) {
             <div className="flex flex-wrap items-center gap-3 mt-2">
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                 {prompt.category || "Uncategorized"}
+              </span>
+              <span className="flex items-center gap-1 text-xs rounded-full bg-emerald-50 text-emerald-700 px-2 py-1">
+                <Activity className="h-3.5 w-3.5" />
+                Used {prompt.usageCount ?? 0}x
               </span>
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
@@ -75,6 +84,12 @@ async function PromptDataView({ promptId }: { promptId: number }) {
           }
           actions={
             <div className="flex flex-wrap gap-3">
+              <form action={toggleFavorite}>
+                <Button variant={prompt.isFavorite ? "default" : "outline"} type="submit">
+                  <Star className="h-4 w-4 mr-2 fill-current" />
+                  {prompt.isFavorite ? "Favorited" : "Add to favorites"}
+                </Button>
+              </form>
               <Link href={`/prompts/${promptId}/edit`} passHref>
                 <Button variant="outline">
                   <Pencil className="h-4 w-4 mr-2" />

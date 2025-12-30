@@ -189,9 +189,9 @@ export function PromptTester({ promptId, promptText, systemMessage, variables }:
                 ))}
               </div>
             ) : (
-              <div className="bg-muted p-4 rounded-md">
-                <p className="text-sm text-muted-foreground">This prompt doesn't contain any variables.</p>
-              </div>
+                <div className="bg-muted p-4 rounded-md">
+                  <p className="text-sm text-muted-foreground">This prompt doesn&apos;t contain any variables.</p>
+                </div>
             )}
 
             <div className="space-y-2">

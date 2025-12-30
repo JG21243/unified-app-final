@@ -71,10 +71,10 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
                 <Sparkles size={32} />
               </div>
               <h2 className="text-2xl font-bold mb-3">Welcome to Legal AI Assistant</h2>
-              <p className="text-muted-foreground mb-6 leading-relaxed">
-                I'm here to help with your legal workflows. You can ask questions, use saved prompts, 
-                or start a conversation about legal topics.
-              </p>
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  I&apos;m here to help with your legal workflows. You can ask questions, use saved prompts,
+                  or start a conversation about legal topics.
+                </p>
               <div className="flex flex-col sm:flex-row gap-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Sparkles size={14} />
@@ -153,9 +153,9 @@ const Chat: React.FC<ChatProps> = ({ items, onSendMessage, isLoading = false, in
                   <div className="p-2 border-b bg-muted/50">
                     <span className="text-xs font-medium text-muted-foreground">Available Prompts</span>
                   </div>
-                  {suggestions.map((p, index) => (
-                    <button
-                      key={p.id}
+                {suggestions.map((p) => (
+                  <button
+                    key={p.id}
                       className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors border-b last:border-b-0 focus:outline-none focus:bg-accent"
                       onMouseDown={(e) => {
                         e.preventDefault();

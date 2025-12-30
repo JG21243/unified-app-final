@@ -151,7 +151,7 @@ export function VirtualizedPromptGrid({
     return rowData
   }, [prompts, itemsPerRow])
 
-  const renderRow = useCallback((row: any[], index: number) => (
+  const renderRow = useCallback((row: any[]) => (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-4">
       {row.map((prompt) => renderPrompt(prompt))}
       {/* Fill empty slots in the last row */}

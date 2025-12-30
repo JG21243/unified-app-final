@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FileText } from "lucide-react"
 
@@ -72,22 +73,22 @@ export function EmptyPromptsState() {
         You can organize them by categories and easily search through them.
       </p>
       
-      <div className="flex flex-col sm:flex-row gap-3">
-        <a 
-          href="/prompts/new"
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors"
-        >
-          <FileText className="h-4 w-4" />
-          Create Your First Prompt
-        </a>
-        
-        <a 
-          href="/categories"
-          className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-md font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-        >
-          Manage Categories
-        </a>
-      </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link
+            href="/prompts/new"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors"
+          >
+            <FileText className="h-4 w-4" />
+            Create Your First Prompt
+          </Link>
+
+          <Link
+            href="/categories"
+            className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-md font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            Manage Categories
+          </Link>
+        </div>
     </div>
   )
 }

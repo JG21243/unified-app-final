@@ -128,7 +128,7 @@ export function PromptAnalytics({ promptId }: PromptAnalyticsProps) {
           <CardDescription>No analytics data available</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">This prompt doesn't have any usage data yet.</p>
+          <p className="text-muted-foreground">This prompt doesn&apos;t have any usage data yet.</p>
         </CardContent>
       </Card>
     )

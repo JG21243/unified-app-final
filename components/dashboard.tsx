@@ -55,12 +55,6 @@ export function Dashboard() {
     value,
   }))
 
-  const summaryData = [
-    { name: "Total Prompts", value: stats.total },
-    { name: "Recently Created", value: stats.recentlyCreated },
-    { name: "Recently Updated", value: stats.recentlyUpdated },
-  ]
-
   // Colors for pie chart
   const COLORS = [
     "hsl(var(--chart-1))",

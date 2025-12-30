@@ -67,7 +67,9 @@ export function PromptListItem({
   const handleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
+    const nextState = !isPromptFavorite
     toggleFavorite(prompt.id)
+    onFavorite?.(prompt.id, nextState)
 
     toast({
       title: isPromptFavorite ? "Removed from favorites" : "Added to favorites",

@@ -15,7 +15,7 @@ interface TagsInputProps {
 }
 
 export function TagsInput({ promptId, className }: TagsInputProps) {
-  const { getPromptTags, addTag, removeTag, allTags } = useTags()
+  const { getPromptTags, addTag, removeTag } = useTags()
   const [newTag, setNewTag] = useState("")
   const [isAdding, setIsAdding] = useState(false)
 

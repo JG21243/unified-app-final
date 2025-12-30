@@ -197,16 +197,16 @@ interface OptimisticPromptListProps {
   onDelete?: (id: string) => Promise<void>
 }
 
-export function OptimisticPromptList({ 
-  initialPrompts, 
-  onFavorite, 
-  onDuplicate, 
-  onDelete 
-}: OptimisticPromptListProps) {
-  const [optimisticPrompts, addOptimisticPrompt] = useOptimistic(
+  export function OptimisticPromptList({
     initialPrompts,
-    (state: Prompt[], newPrompt: Prompt) => [...state, newPrompt]
-  )
+    onFavorite,
+    onDuplicate,
+    onDelete
+  }: OptimisticPromptListProps) {
+    const [optimisticPrompts] = useOptimistic(
+      initialPrompts,
+      (state: Prompt[], newPrompt: Prompt) => [...state, newPrompt]
+    )
 
   return (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

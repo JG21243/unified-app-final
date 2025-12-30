@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useFavorites } from "@/components/favorites-provider"
-import { useTags } from "@/components/tags-provider"
 import { TagsInput } from "@/components/tags-input"
 import { type LegalPrompt, duplicateLegalPrompt, deleteLegalPrompt } from "@/app/actions"
 import { useToast } from "@/components/ui/use-toast"
@@ -25,12 +24,10 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
   const { id, name, category, prompt: promptText, systemMessage, createdAt } = prompt
   const { toast } = useToast()
   const router = useRouter()
-  const { favorites, toggleFavorite, isFavorite } = useFavorites()
-  const { getPromptTags } = useTags()
+  const { toggleFavorite, isFavorite } = useFavorites()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDuplicating, setIsDuplicating] = useState(false)
 
-  const promptTags = getPromptTags(id)
   const isFavorited = isFavorite(id)
 
   // Extract variables from the prompt
@@ -57,6 +54,7 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
         })
       }
     } catch (error) {
+      console.error("Failed to duplicate prompt", error)
       toast({
         title: "Error",
         description: "An unexpected error occurred.",
@@ -85,6 +83,7 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
         })
       }
     } catch (error) {
+      console.error("Failed to delete prompt", error)
       toast({
         title: "Error",
         description: "An unexpected error occurred.",

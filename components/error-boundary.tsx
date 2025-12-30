@@ -22,15 +22,15 @@ export function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center max-w-2xl mx-auto">
-      <div className="mb-6">
-        <div className="rounded-full bg-red-100 p-3 mb-4 inline-flex">
-          <AlertTriangle className="h-8 w-8 text-red-600" />
+        <div className="mb-6">
+          <div className="rounded-full bg-red-100 p-3 mb-4 inline-flex">
+            <AlertTriangle className="h-8 w-8 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Something went wrong</h2>
+          <p className="text-muted-foreground mb-4">
+            We encountered an unexpected error. Don&apos;t worry, this has been logged and we&apos;ll look into it.
+          </p>
         </div>
-        <h2 className="text-2xl font-bold mb-2">Something went wrong</h2>
-        <p className="text-muted-foreground mb-4">
-          We encountered an unexpected error. Don't worry, this has been logged and we'll look into it.
-        </p>
-      </div>
 
       {/* Error details */}
       <Alert className="mb-6 text-left max-w-md">

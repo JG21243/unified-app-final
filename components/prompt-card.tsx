@@ -32,9 +32,6 @@ export function PromptCard({
   selectable = false,
   selected = false,
   onSelect,
-  onFavorite, // Add unused props to destructuring for completeness
-  onDuplicate, // Add unused props to destructuring for completeness
-  onDelete, // Add unused props to destructuring for completeness
 }: PromptCardProps) {
   const handleCheckboxChange = (checked: boolean | "indeterminate") => {
     // The Checkbox onCheckedChange provides boolean | "indeterminate"
