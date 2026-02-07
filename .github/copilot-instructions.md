@@ -1,171 +1,109 @@
-# GitHub Copilot Instructions for unified-app-final
+# GitHub Copilot Instructions — unified-app-final
 
-## Project Overview
+## Repository Summary (What this repo does)
+- **Purpose:** AI assistant web app that blends a chat experience with prompt management, vector store document search, and custom function tools. It merges openai-responses-starter-app with a legal-prompts management UI.
+- **Project type:** Next.js 15 App Router web app (React 19 + TypeScript).
+- **Languages:** TypeScript/TSX, JavaScript (scripts), CSS.
+- **Runtime & tooling (validated):** Node.js **v24.13.0**, npm **11.6.2**, TypeScript **5.8.3**. CI pins Node **18.17.0** (see CI note below).
+- **Repo size:** mid-sized (~2000+ files; many UI components and scripts).
 
-This is a Next.js 15.2.3 TypeScript AI assistant starter application with React 19, featuring chat interfaces, vector store integration, prompt management, and custom AI tools. The project combines functionality from openai-responses-starter-app and legal-prompts-app.
+## Always-Validated Commands (run in this order)
+> **Always run `npm install` before any other command.** Most scripts fail or emit missing module errors otherwise.
 
-## Core Technologies
+### Bootstrap
+1. `npm install`  
+   - **Took ~2 minutes.** Emits deprecation warnings and reports **42 vulnerabilities**.  
+   - Updates `package-lock.json` when npm version differs; revert if you don’t intend to update the lockfile.
 
-- **Framework**: Next.js 15.2.3 with App Router and React 19
-- **Language**: TypeScript 5 in strict mode
-- **Styling**: TailwindCSS with custom design tokens
-- **Database**: PostgreSQL via Drizzle ORM with Neon driver
-- **State Management**: Zustand stores
-- **AI Integration**: OpenAI API with vector stores
-- **Package Manager**: npm (keep package-lock.json committed)
+### Lint / Format / Type-check
+2. `npm run lint`  
+   - ✅ Passed. Runs `next lint` (Next telemetry notice appears).
+3. `npm run type-check`  
+   - ❌ **Fails** with many TypeScript errors (primarily in `app/actions.ts`, multiple components, and OpenAI typings).  
+   - **CI continues on error** for this step.
+4. `npx prettier --check .`  
+   - ❌ **Fails** with formatting warnings in ~200 files.  
+   - Prettier is **not** a devDependency, so `npx` downloads **prettier@3.8.1** each run.  
+   - **CI continues on error** for this step.
 
-## Development Guidelines
+### Tests
+5. `npm test -- --watchAll=false`  
+   - ✅ Passed. Emits console warnings from `lib/prompt-metadata.ts` and `components/assistant.tsx` (`act(...)` warning).
 
-### File Structure Conventions
+### Build / Run
+6. `OPENAI_API_KEY=dummy-key DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy npm run build`  
+   - ✅ Build succeeds on Node 24.  
+   - Logs **Neon DB connection failures** during page data collection; app falls back to bundled prompts.  
+   - `next.config.mjs` skips lint/type-check during build.
+7. `OPENAI_API_KEY=dummy-key DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy npm run dev`  
+   - ✅ Dev server starts in ~1.2s at `http://localhost:3000`.  
+8. `npm run start` (after a successful build)  
+   - Runs `next start`.
 
-- Server Components in `app/` for data fetching
-- Client Components in `components/` for interactivity
-- Reusable UI primitives in `components/ui/`
-- Server actions in `app/actions/`
-- API routes in `app/api/`
-- Database schema in `lib/db/`
-- Custom tools in `lib/tools/`
-- Configuration in `config/`
-- Design tokens in `design/`
+### Utility Scripts (run only when needed)
+9. `npm run generate:ui-inventory`  
+   - ✅ Generates `docs/ui-inventory.md`.  
+   - Node warns about module type; output is still generated.
+10. `npm run generate:css-vars`  
+   - ✅ Writes `styles/theme-vars.css`.
 
-### Code Style & Patterns
+### Dependency Checks (CI)
+11. `npm audit --audit-level=moderate`  
+   - ❌ Fails with multiple vulnerabilities (includes **1 critical**).  
+   - CI runs this with `continue-on-error`.
+12. `npm outdated`  
+   - ❌ Exits with code 1 (lists many outdated packages).  
+   - CI runs this with `continue-on-error`.
 
-- Use Server Components by default, Client Components only when needed for interactivity
-- All exports must use Zod schemas for runtime validation
-- Follow React 19 patterns and Next.js App Router conventions
-- Tailwind class ordering enforced by headwind ESLint plugin
-- Prefer TypeScript strict mode and explicit typing
-- Use conventional commit prefixes (feat:, fix:, docs:, etc.)
+### Clean/Reset Notes
+- There is **no clean script**. If you need a clean slate, delete `node_modules/` and `.next/` manually (or use `git clean -fdx` with caution).
 
-### Testing Requirements
+## CI / Workflow Notes (GitHub Actions)
+File: `.github/workflows/ci.yml`
+- **Jobs:** `code-quality`, `build`, `dependency-check`, `commit-convention`.
+- **Code-quality job** runs: `npm ci`, `npm run lint`, `npm run type-check`, `npx prettier --check .`, `npm test -- --coverage --watchAll=false` (all **continue-on-error**).
+- **Build job** runs `npm ci` + `npm run build` with dummy env vars.
+- **Dependency-check** runs `npm audit --audit-level=moderate` + `npm outdated` (continue-on-error).
+- **Commit convention** enforces conventional commit types via commitlint.
+**Known CI failure:** Build job uses **Node 18.17.0**, but Next 15 requires **>=18.18.0**. CI logs show:  
+`You are using Node.js 18.17.0. For Next.js, Node.js version "^18.18.0 || ^19.8.0 || >= 20.0.0" is required.`
 
-- Jest with 90% coverage threshold
-- Place mocks in `tests/__mocks__/`
-- Test files should mirror source structure
-- Focus on component behavior and integration tests
+## Project Layout & Architecture
+- **App Router entrypoints:**  
+  - `app/layout.tsx` (Root layout with ThemeProvider + GlobalHeader/Footer)  
+  - `app/page.tsx` (redirects `/` → `/prompts`)  
+  - `app/chat/page.tsx` (loads a prompt by ID then renders `ChatPageClient`)
+- **Server actions:** `app/actions.ts`, `app/actions/ai-actions.ts`
+- **API routes:** `app/api/*` (chat, vector store, tools, prompts)
+- **UI components:** `components/` + primitives in `components/ui/`
+- **Database:** Drizzle in `lib/db/`, config in `drizzle.config.json`
+- **AI tooling:** `lib/tools/`, `config/functions.ts`, `config/tools-list.ts`
+- **Styles:** `styles/`, Tailwind config in `tailwind.config.ts`, tokens in `design/`
+- **State:** Zustand stores in `stores/`
+- **Tests:** Jest in `tests/` (config: `jest.config.js`, `tsconfig.jest.json`)
 
-### Database & Data
+### Key configuration files
+`eslint.config.mjs`, `.prettierrc`, `.prettierignore`, `next.config.mjs`, `tsconfig.json`, `tailwind.config.ts`, `postcss.config.mjs`, `commitlint.config.js`, `.hintrc`
 
-- Use Drizzle ORM for all database operations
-- Never run migrations outside CI without explicit confirmation
-- Database connection via Neon serverless driver
-- Use transactions for complex operations
+## README Highlights (compressed)
+- Features: multi-turn chat, vector store upload/search (≤25MB), web search, function calling, streaming responses, prompt management UI, mobile-friendly.
+- Tech: Next.js 15.2.x, React 19, TailwindCSS, OpenAI API, Zustand, Drizzle/Neon.
+- Setup: `npm install`, create `.env.local` with `OPENAI_API_KEY` + `DATABASE_URL`, run `npm run dev`.
+- Notes: `docs/ui-inventory.md` is generated by `npm run generate:ui-inventory`.
 
-### AI Integration Patterns
-
-- Vector stores for document search (≤25MB files)
-- Custom function calling via `config/functions.ts`
-- Streaming responses for real-time UX
-- OpenAI API wrappers in `app/api/`
-
-### Security & Safety
-
-- Never commit real API keys (use `.env.example` for templates)
-- Avoid uploading non-public data to vector stores without approval
-- Destructive commands require `--yes-i-understand` flag
-- Use server-only imports for sensitive operations
-
-## Common Patterns
-
-### Creating New Components
-
-```typescript
-'use client' // Only if client interactivity needed
-
-import { cn } from '@/lib/utils'
-import { ComponentProps } from 'react'
-
-interface MyComponentProps extends ComponentProps<'div'> {
-  // Use Zod schema for validation if needed
-}
-
-export function MyComponent({ className, ...props }: MyComponentProps) {
-  return (
-    <div className={cn("base-styles", className)} {...props}>
-      {/* Component content */}
-    </div>
-  )
-}
+## Root Files (repo top-level)
+```
+.cursorrules  .github/  .vscode/  AGENTS.md  README.md  app/  components/  config/  design/
+docs/  hooks/  lib/  scripts/  stores/  tests/  styles/  public/  package.json
+package-lock.json  next.config.mjs  tailwind.config.ts  tsconfig*.json  jest.config.js  drizzle.config.json
 ```
 
-### Server Actions Pattern
+## Next-Level Directory Snapshot (most important folders)
+- `app/`: `actions/`, `api/`, `chat/`, `prompts/`, `categories/`, `layout.tsx`, `page.tsx`
+- `app/api/`: `ai/`, `functions/`, `prompts/`, `turn_response/`, `vector_stores/`
+- `components/`: feature components + `layout/`, `theme/`, `ui/`
+- `lib/`: `db/`, `server/`, `tools/`, `validation.ts`, `utils.ts`
+- `docs/`: `AI_CODING_GUIDE.md`, `api-documentation.md`, `codebase-guide.md`, `ui-inventory.md`
 
-```typescript
-'use server';
-
-import { z } from 'zod';
-import { redirect } from 'next/navigation';
-
-const schema = z.object({
-  // Define schema
-});
-
-export async function myAction(formData: FormData) {
-  const validatedFields = schema.safeParse({
-    // Parse form data
-  });
-
-  if (!validatedFields.success) {
-    return { error: 'Invalid fields' };
-  }
-
-  // Database operations
-  // Revalidate cache if needed
-  // Redirect if needed
-}
-```
-
-### API Route Pattern
-
-```typescript
-import { NextRequest } from 'next/server';
-import { z } from 'zod';
-
-const bodySchema = z.object({
-  // Define request schema
-});
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const validatedData = bodySchema.parse(body);
-
-    // Process request
-
-    return Response.json({ success: true });
-  } catch (error) {
-    return Response.json({ error: 'Failed' }, { status: 400 });
-  }
-}
-```
-
-## File Restrictions
-
-- **Never edit**: `public/`, `.next/`, generated artifacts, `node_modules/`
-- **Database migrations**: Only in CI or with explicit user confirmation
-- **Environment files**: Use `.env.example`, never commit real secrets
-
-## Development Workflow
-
-1. `npm install` - Install dependencies
-2. `npm run lint` - ESLint + Prettier
-3. `npm run type-check` - TypeScript validation
-4. `npm test` - Jest tests
-5. `npm run build` - Next.js build
-
-Run full sequence before opening/merging PRs.
-
-## Environment Variables
-
-- `OPENAI_API_KEY` - OpenAI API access
-- `VECTOR_STORE_ID` - Default vector store
-- `DATABASE_URL` - PostgreSQL connection
-- `NEXT_PUBLIC_API_BASE` - Public API endpoint
-
-## Additional Notes
-
-- This project has an extensive AGENTS.md file - reference it for detailed project context
-- Use feature branches with squash-merge for linear history
-- Prefer minimal, surgical changes over large refactors
-- Document complex business logic and AI integration patterns
-- Consider mobile responsiveness for all UI changes
+## Trust These Instructions
+These instructions were validated in this environment. **Trust them and only search if the instructions are incomplete or incorrect.**
